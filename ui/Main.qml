@@ -506,8 +506,22 @@ ApplicationWindow {
                         anchors.fill: parent
                         anchors.margins: 18
                         spacing: 11
-                        RowLayout {
-                            DragHandler { onActiveChanged: if (active) window.startSystemMove() }
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 40
+MouseArea {
+                                anchors.fill: parent
+                                property point pressPos
+                                property point pressWindowPos
+                                enabled: window.visibility !== Window.Maximized
+                                onPressed: function(mouse) { pressPos = Qt.point(mouse.x, mouse.y); pressWindowPos = Qt.point(window.x, window.y) }
+                                onPositionChanged: function(mouse) { if (pressed) { window.x = pressWindowPos.x + mouse.x - pressPos.x; window.y = pressWindowPos.y + mouse.y - pressPos.y } }
+                            }
+                            RowLayout {
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 8
                             Rectangle {
                                 width: 24
                                 height: 24
@@ -521,6 +535,7 @@ ApplicationWindow {
                                 spacing: 0
                                 Text { text: "DDI 逆向神力"; color: "#F2F6F1"; font.pixelSize: 15; font.bold: true }
                                 Text { text: "V14.0 · PROTOCOL FIRST"; color: "#8FA394"; font.pixelSize: 11 }
+                            }
                             }
                         }
                         Rectangle { Layout.fillWidth: true; height: 1; color: border }
@@ -623,7 +638,14 @@ ApplicationWindow {
                             Layout.preferredHeight: 58
                             Rectangle { anchors.fill: parent; color: "#FFFFFF" }
                             Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 1; color: border }
-                            DragHandler { onActiveChanged: if (active) window.startSystemMove() }
+MouseArea {
+                                anchors.fill: parent
+                                property point pressPos
+                                property point pressWindowPos
+                                enabled: window.visibility !== Window.Maximized
+                                onPressed: function(mouse) { pressPos = Qt.point(mouse.x, mouse.y); pressWindowPos = Qt.point(window.x, window.y) }
+                                onPositionChanged: function(mouse) { if (pressed) { window.x = pressWindowPos.x + mouse.x - pressPos.x; window.y = pressWindowPos.y + mouse.y - pressPos.y } }
+                            }
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.leftMargin: 12
@@ -689,6 +711,8 @@ ApplicationWindow {
             Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 150
+                Layout.leftMargin: workspaceInset
+                Layout.rightMargin: workspaceInset
                 Rectangle {
                     anchors.left: parent.left
                     anchors.top: parent.top
