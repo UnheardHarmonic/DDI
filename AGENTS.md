@@ -1,4 +1,4 @@
-﻿# DDI V13.0 项目协作说明
+﻿# DDI V14.0 项目协作说明
 
 ## 项目定位
 
@@ -6,7 +6,7 @@
 
 ## 固定工作目录
 
-- 项目根目录：`D:\PycharmProjects\pythonProject\King_Code\DDI\DDI V13.0`
+- 项目根目录：`D:\PycharmProjects\pythonProject\King_Code\DDI\DDI V14.0`
 - 主入口：`run_ddi.py`
 - 平台适配器目录：`ddi_framework\platforms`
 - 平台注册：`ddi_framework\platform_registry.py`
@@ -94,17 +94,17 @@
 
 ### 形态一：onedir 标准版（默认，交付同事使用）
 
-- 构建配置：`packaging\DDI_V13.0.spec` + `packaging\DDI_V13.0_GUI.spec`。
+- 构建配置：`packaging\DDI_V14.0.spec` + `packaging\DDI_V14.0_GUI.spec`。
 - 构建命令：`powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\build_release.ps1`。
-- 产物：`dist\DDI_V13.0\` 整个目录（终端 exe + GUI exe + `_cli_internal` + `_internal` + `config` + `COLLEAGUE_GUIDE.md`），交付必须给整个目录。
+- 产物：`dist\DDI_V14.0\` 整个目录（终端 exe + GUI exe + `_cli_internal` + `_internal` + `config` + `COLLEAGUE_GUIDE.md`），交付必须给整个目录。
 
 ### 形态二：单文件版（用户自用携带）
 
-- 构建配置：`packaging\DDI_V13.0_onefile.spec` + `packaging\DDI_V13.0_GUI_onefile.spec`。
+- 构建配置：`packaging\DDI_V14.0_onefile.spec` + `packaging\DDI_V14.0_GUI_onefile.spec`。
 - 构建命令（两条分别执行）：
-  - `python -m PyInstaller packaging\DDI_V13.0_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_cli`
-  - `python -m PyInstaller packaging\DDI_V13.0_GUI_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_gui`
-- 产物：`dist\DDI_V13.0_单文件版\` 内只有 `DDI_V13.0.exe` 与 `DDI_V13.0_GUI.exe` 两个文件。
+  - `python -m PyInstaller packaging\DDI_V14.0_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_cli`
+  - `python -m PyInstaller packaging\DDI_V14.0_GUI_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_gui`
+- 产物：`dist\DDI_V14.0_单文件版\` 内只有 `DDI_V14.0.exe` 与 `DDI_V14.0_GUI.exe` 两个文件。
 - 单文件版特性：每次启动自解压约 10 秒属正常现象；配置、授权、运行产物从 exe 所在目录读取，`license.json` 放 exe 旁 `config\` 内即可生效。
 
 ### 全量账密内嵌策略（2026-10-09 明令，固定执行）

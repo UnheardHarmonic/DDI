@@ -10,25 +10,25 @@ $guiPypiMirror = 'https://pypi.tuna.tsinghua.edu.cn/simple'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 
 # 解析终端入口打包配置路径。
-$cliSpecPath = Join-Path $PSScriptRoot 'DDI_V13.0.spec'
+$cliSpecPath = Join-Path $PSScriptRoot 'DDI_V14.0.spec'
 
 # 解析 GUI 入口打包配置路径。
-$guiSpecPath = Join-Path $PSScriptRoot 'DDI_V13.0_GUI.spec'
+$guiSpecPath = Join-Path $PSScriptRoot 'DDI_V14.0_GUI.spec'
 
 # 解析发布根目录。
 $releaseRoot = Join-Path $projectRoot 'dist'
 
 # 解析共享双入口发布目录。
-$distributionRoot = Join-Path $releaseRoot 'DDI_V13.0'
+$distributionRoot = Join-Path $releaseRoot 'DDI_V14.0'
 
 # 解析 GUI 临时构建输出目录。
-$guiDistributionRoot = Join-Path $releaseRoot 'DDI_V13.0_GUI_BUILD'
+$guiDistributionRoot = Join-Path $releaseRoot 'DDI_V14.0_GUI_BUILD'
 
 # 解析终端构建工作目录。
-$cliBuildRoot = Join-Path $projectRoot 'runtime\archive\generated\build\DDI_V13.0'
+$cliBuildRoot = Join-Path $projectRoot 'runtime\archive\generated\build\DDI_V14.0'
 
 # 解析 GUI 构建工作目录。
-$guiBuildRoot = Join-Path $projectRoot 'runtime\archive\generated\build\DDI_V13.0_GUI'
+$guiBuildRoot = Join-Path $projectRoot 'runtime\archive\generated\build\DDI_V14.0_GUI'
 
 # 确保发布根目录存在。
 New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
@@ -79,7 +79,7 @@ if (-not (Test-Path -LiteralPath $guiDistributionRoot -PathType Container)) {
 }
 
 # 复制 GUI 可执行文件到共享发布目录。
-Copy-Item -LiteralPath (Join-Path $guiDistributionRoot 'DDI_V13.0_GUI.exe') -Destination (Join-Path $distributionRoot 'DDI_V13.0_GUI.exe') -Force
+Copy-Item -LiteralPath (Join-Path $guiDistributionRoot 'DDI_V14.0_GUI.exe') -Destination (Join-Path $distributionRoot 'DDI_V14.0_GUI.exe') -Force
 
 # 复制 GUI 独立运行时目录到共享发布目录。
 Copy-Item -LiteralPath (Join-Path $guiDistributionRoot '_internal') -Destination $distributionRoot -Recurse -Force

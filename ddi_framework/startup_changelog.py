@@ -333,9 +333,25 @@ CHANGELOG_V13 = """DDI V13.0 更新日志
 - 贵州九州通达医药有限公司"""
 
 
+# 定义 V14.0 启动更新日志文本。
+CHANGELOG_V14 = """DDI V14.0 更新日志
+
+发布治理：
+- 项目升级为独立的 DDI V14.0 工程，正式打包名称、控制台标题、图形界面标题和同事使用说明统一升级为 V14.0。
+- 本机 Web 图形界面整体移除，任务入口收敛为终端与桌面图形界面两种形态。
+
+新增功能：
+- 桌面图形界面按正式商业软件形态重构：米白纸感底色、深墨绿主色与左侧导航工作台布局。
+- 平台适配器公共样板统一收敛至基类，新增商业接入成本显著下降。
+
+修复 BUG：
+- 库存导出文件名统一使用导出当天日期，消除多套命名路径并存。
+- 国控安徽信息服务平台浏览器导出链路显式声明临时浏览器兜底。
+- 九州通系与国药控股福建账号配置补齐数据类型声明，消除全局默认回退漂移。"""
+
 
 # 定义当前启动阶段展示的版本号。
-STARTUP_CHANGELOG_VERSION = "V13"
+STARTUP_CHANGELOG_VERSION = "V14"
 
 # 初始化版本号到更新日志文本的映射。
 STARTUP_CHANGELOGS = {}
@@ -378,6 +394,9 @@ STARTUP_CHANGELOGS["V12"] = CHANGELOG_V12
 
 # 注册 V13.0 更新日志文本。
 STARTUP_CHANGELOGS["V13"] = CHANGELOG_V13
+
+# 注册 V14.0 更新日志文本。
+STARTUP_CHANGELOGS["V14"] = CHANGELOG_V14
 
 
 def get_current_startup_changelog():

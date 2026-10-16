@@ -1,6 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-DDI V13.0 终端单文件 PyInstaller 构建配置。
+DDI V14.0 终端单文件 PyInstaller 构建配置。
 
 本 spec 将终端入口与全部依赖打包为单个可执行文件，不生成伴随运行时目录。
 """
@@ -76,7 +76,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name="DDI_V13.0",
+    name="DDI_V14.0",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -527,7 +527,7 @@ ApplicationWindow {
                             ColumnLayout {
                                 spacing: 0
                                 Text { text: "DDI 逆向神力"; color: textMain; font.pixelSize: 15; font.bold: true }
-                                Text { text: "V13.0 · PROTOCOL FIRST"; color: textDim; font.pixelSize: 11 }
+                                Text { text: "V14.0 · PROTOCOL FIRST"; color: textDim; font.pixelSize: 11 }
                             }
                         }
                         Rectangle { Layout.fillWidth: true; height: 1; color: border }
@@ -772,7 +772,7 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 spacing: 2
                                 Text { text: "本版更新"; color: textMain; font.pixelSize: 16; font.bold: true }
-                                Text { text: "DDI V13.0 · Qt Quick 深色冰晶工作台"; color: textMuted; font.pixelSize: 11 }
+                                Text { text: "DDI V14.0 · Qt Quick 深色冰晶工作台"; color: textMuted; font.pixelSize: 11 }
                             }
                         }
                         Rectangle { Layout.fillWidth: true; height: 1; color: border }

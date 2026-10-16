@@ -711,7 +711,7 @@ def print_startup_avatar():
     print_startup_avatar_art()
 
     # 输出启动标题文本。
-    print(f"  {menu_color('DDI V13.0', 'green')}")
+    print(f"  {menu_color('DDI V14.0', 'green')}")
 
     # 输出头像后置空行。
     print()

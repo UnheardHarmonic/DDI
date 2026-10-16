@@ -58,7 +58,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="DDI_V13.0",
+    name="DDI_V14.0",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -79,6 +79,6 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name="DDI_V13.0",
+    name="DDI_V14.0",
 )
 
