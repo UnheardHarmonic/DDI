@@ -556,26 +556,6 @@ class YanxitangPlatform(BasePlatform):
         # 返回报表分页查询结果。
         return self.fetch_report_rows(data_type, start_date, end_date)
 
-    # 定义平台导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出指定类型业务数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: 导出结果。
-        :rtype: str
-        """
-
-        # 使用分页查询结果生成本地 Excel 文件。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义平台查询落地方法。
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
@@ -789,27 +769,6 @@ class YanxitangPlatform(BasePlatform):
         # 返回空结果。
         return None
 
-    # 定义查询分隔线打印方法。
-    def print_query_section(self, data_type, start_date, end_date):
-
-        """
-        打印报表查询阶段分隔线。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: None。
-        :rtype: None
-        """
-
-        # 打印标准阶段分隔线。
-        self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date or "", "cyan"), self.ph.kv("结束日期", end_date or "", "cyan")))
-
-        # 返回空结果。
-        return None
 
     # 定义报表查询载荷构建方法。
     def build_report_payload(self, data_type, start_date, end_date, current_page):
@@ -1357,20 +1316,3 @@ class YanxitangPlatform(BasePlatform):
         # 返回空结果。
         return None
 
-    # 定义站点根地址构建方法。
-    def build_origin(self, url):
-
-        """
-        构建 URL 的站点根地址。
-
-        :param url: 原始 URL。
-        :type url: str
-        :return: 站点根地址。
-        :rtype: str
-        """
-
-        # 解析 URL 结构。
-        parsed_url = urlparse(url)
-
-        # 返回协议与主机组合。
-        return f"{parsed_url.scheme}://{parsed_url.netloc}"

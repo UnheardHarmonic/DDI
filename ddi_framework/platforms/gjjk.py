@@ -1872,20 +1872,3 @@ class GjjkPlatform(BasePlatform):
         # 调用平台导出流程生成 Excel 文件。
         return self.export_flow(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
-    # 定义站点根地址构建方法。
-    def build_origin(self, url):
-
-        """
-        构建 URL 对应的站点根地址。
-
-        :param url: 原始 URL。
-        :type url: str
-        :return: 站点根地址。
-        :rtype: str
-        """
-
-        # 解析 URL 结构。
-        parsed_url = urlparse(url)
-
-        # 返回协议与主机拼接的根地址。
-        return f"{parsed_url.scheme}://{parsed_url.netloc}"

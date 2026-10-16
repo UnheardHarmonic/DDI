@@ -163,32 +163,6 @@ class HxPlatform(BasePlatform):
         # 返回登录表单字段。
         return {"verflag": self.version_flag, "accountname": self.account_name, "yid": self.account_id, "yidim": "", "code": self.clean_login_name(), "ecode": self.clean_login_name(), "password": self.clean_login_password(), "remebers": "1", "phone": "", "yzm": "", "macuuid": machine_uuid}
 
-    # 定义 Cookie 保存方法。
-    def save_cookie(self, output_dir):
-
-        """
-        保存当前登录 Cookie。
-
-        :param output_dir: 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存 Cookie 文件。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
 
     # 定义流向查询方法。
     def query_flow(self, data_type, start_date=None, end_date=None):
@@ -212,26 +186,6 @@ class HxPlatform(BasePlatform):
         # 返回查询结果数据行。
         return query_result["rows"]
 
-    # 定义流向导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出海翔供应链平台业务数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: 导出文件路径。
-        :rtype: str
-        """
-
-        # 使用查询结果生成本地 Excel 文件。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义查询落地 Excel 方法。
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
@@ -428,24 +382,6 @@ class HxPlatform(BasePlatform):
         # 返回当前数据类型页签编号。
         return mapping[data_type]
 
-    # 定义登录状态校验方法。
-    def ensure_login(self):
-
-        """
-        确保当前适配器已经完成登录。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断登录状态是否已经存在。
-        if self.logged_in:
-
-            # 登录状态存在时直接返回。
-            return
-
-        # 执行登录流程。
-        self.login()
 
     # 定义查询阶段标题打印方法。
     def print_query_section(self, data_type, start_date, end_date):
@@ -466,31 +402,7 @@ class HxPlatform(BasePlatform):
         # 打印流向查询标题。
         self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date, "cyan"), self.ph.kv("结束日期", end_date, "cyan")))
 
-    # 定义登录账号清洗方法。
-    def clean_login_name(self):
 
-        """
-        读取并清洗登录账号。
-
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回去除两端空白后的登录账号。
-        return str(self.account.get("账号", "")).strip()
-
-    # 定义登录密码清洗方法。
-    def clean_login_password(self):
-
-        """
-        读取并清洗登录密码。
-
-        :return: 登录密码。
-        :rtype: str
-        """
-
-        # 返回去除两端空白后的登录密码。
-        return str(self.account.get("密码", "")).strip()
 
     # 定义文本响应解析方法。
     def decode_text(self, result):
@@ -659,24 +571,6 @@ class HxPlatform(BasePlatform):
         # 返回流向类默认表头。
         return flow_headers
 
-    # 定义输出文件名构建方法。
-    def build_output_file_name(self, data_type, start_date, end_date):
-
-        """
-        构建输出文件名。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
-
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
 
     # 定义通用 Excel 写入方法。
     def write_rows_to_excel(self, rows, headers, output_path, sheet_name):
@@ -756,32 +650,3 @@ class HxPlatform(BasePlatform):
         # 关闭导出工作簿。
         workbook.close()
 
-    # 定义同名文件删除方法。
-    def remove_existing_file(self, output_path):
-
-        """
-        删除已有同名输出文件。
-
-        :param output_path: 输出文件路径。
-        :type output_path: str
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断目标文件是否存在。
-        if not os.path.exists(output_path):
-
-            # 无需删除不存在的文件。
-            return
-
-        # 捕获文件删除异常。
-        try:
-
-            # 删除已有目标文件。
-            os.remove(output_path)
-
-        # 处理文件被占用导致的删除异常。
-        except PermissionError as error:
-
-            # 抛出带业务路径的文件占用异常。
-            raise PermissionError(f"无法覆盖文件，请先关闭已打开的 Excel 文件：{output_path}") from error

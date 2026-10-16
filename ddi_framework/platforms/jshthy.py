@@ -300,16 +300,6 @@ class JshthyPlatform(BasePlatform):
         # 返回补齐边界后的 PEM 公钥。
         return f"-----BEGIN PUBLIC KEY-----\n{key_text}\n-----END PUBLIC KEY-----\n"
 
-    def clean_login_name(self):
-        """
-        读取并清洗登录账号。
-
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回去除首尾空白的账号。
-        return str(self.account.get("账号", "")).strip()
 
     def clean_login_password(self):
         """
@@ -322,30 +312,6 @@ class JshthyPlatform(BasePlatform):
         # 返回原始密码字符串。
         return str(self.account.get("密码", ""))
 
-    def save_cookie(self, output_dir):
-        """
-        保存当前登录 Cookie。
-
-        :param output_dir: 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存 Cookie 文件。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
 
     def query_flow(self, data_type, start_date=None, end_date=None):
         """

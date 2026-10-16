@@ -358,49 +358,7 @@ class JsayPlatform(BasePlatform):
         # 返回查询结果行。
         return query_result["rows"]
 
-    def save_cookie(self, output_dir):
-        """
-        保存当前登录 Cookie。
 
-        :param output_dir: 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存 Cookie 文件。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
-
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-        """
-        导出指定类型业务数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 使用查询结果生成本地 Excel。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
         """
@@ -839,22 +797,6 @@ class JsayPlatform(BasePlatform):
         # 写入 Cookie 容器。
         self.http.cookie_jar.set_cookie(cookie)
 
-    def ensure_login(self):
-        """
-        确保当前适配器已经完成登录。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断登录状态是否已经存在。
-        if self.logged_in:
-
-            # 登录状态存在时直接返回。
-            return
-
-        # 执行登录流程。
-        self.login()
 
     def validate_login_response(self, response_data):
         """
@@ -1066,52 +1008,8 @@ class JsayPlatform(BasePlatform):
         # 返回 JSON 解析结果。
         return json.loads(text)
 
-    def build_output_file_name(self, data_type, start_date, end_date):
-        """
-        构建输出文件名。
 
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
 
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
-
-    def build_month_label(self, start_date):
-        """
-        构建流向文件月份标签。
-
-        :param start_date: 查询开始日期。
-        :type start_date: str
-        :return: 月份标签。
-        :rtype: str
-        """
-
-        # 解析查询开始日期。
-        date_value = datetime.strptime(start_date, "%Y-%m-%d")
-
-        # 返回 yy.m月 标签。
-        return f"{date_value.year % 100}.{date_value.month}月"
-
-    def build_stock_date_label(self):
-        """
-        构建库存文件日期标签。
-
-        :return: 日期标签。
-        :rtype: str
-        """
-
-        # 读取当前日期。
-        date_value = datetime.now()
-
-        # 返回 yy.m.d 标签。
-        return f"{date_value.year % 100}.{date_value.month}.{date_value.day}"
 
     def write_rows_to_excel(self, rows, headers, output_path, sheet_name):
         """
@@ -1205,16 +1103,6 @@ class JsayPlatform(BasePlatform):
         # 删除已有输出文件。
         os.remove(output_path)
 
-    def clean_login_name(self):
-        """
-        读取并清洗登录账号。
-
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回去除首尾空白的账号。
-        return str(self.account.get("账号", "")).strip()
 
     def clean_login_password(self):
         """

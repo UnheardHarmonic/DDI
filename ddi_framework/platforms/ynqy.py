@@ -272,26 +272,6 @@ class YnqyPlatform(BasePlatform):
         # 返回标准字段与原始字段合并后的数据行。
         return [self._build_output_row(data_type, raw_row) for raw_row in filtered_rows]
 
-    # 定义导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        查询指定 DDI 类型并生成 Excel 文件。
-
-        :param data_type: DDI 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: Excel 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 复用查询落地 Excel 方法。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义查询落地 Excel 方法。
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):

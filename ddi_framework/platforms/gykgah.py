@@ -474,32 +474,6 @@ class GykgahPlatform(BasePlatform):
         # 返回首页文本。
         return index_text
 
-    # 定义 Cookie 保存方法。
-    def save_cookie(self, output_dir):
-
-        """
-        保存当前登录 Cookie。
-
-        :param output_dir: Cookie 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建 Cookie 输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存 Cookie 文件。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
 
     # 定义平台导出方法。
     def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
@@ -1109,24 +1083,6 @@ class GykgahPlatform(BasePlatform):
             # 抛出数据类型异常。
             raise ValueError(f"国控安徽信息服务平台暂未接入数据类型：{data_type}")
 
-    # 定义输出文件名构建方法。
-    def build_output_file_name(self, data_type, start_date, end_date):
-
-        """
-        构建输出文件名。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
-
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
 
     # 定义页面日期格式化方法。
     def format_page_date(self, date_value):
@@ -1230,18 +1186,6 @@ class GykgahPlatform(BasePlatform):
         # 使用 UTF-8 解码响应体。
         return result.body.decode("utf-8", errors="replace")
 
-    # 定义登录名清理方法。
-    def clean_login_name(self):
-
-        """
-        读取登录账号。
-
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回去除空白后的账号。
-        return str(self.account.get("账号", "")).strip()
 
     # 定义登录密码清理方法。
     def clean_login_password(self):

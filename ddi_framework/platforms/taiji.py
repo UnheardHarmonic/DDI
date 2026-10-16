@@ -144,32 +144,6 @@ class TaijiPlatform(BasePlatform):
         # 返回登录结果摘要。
         return {"登录状态": "成功", "Cookie数量": len(list(self.http.cookie_jar))}
 
-    # 定义 Cookie 保存方法。
-    def save_cookie(self, output_dir):
-
-        """
-        保存当前登录会话 Cookie。
-
-        :param output_dir: Cookie 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建 Cookie 输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存当前 HTTP 会话 Cookie。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
 
     # 定义平台查询方法。
     def query_flow(self, data_type, start_date=None, end_date=None):
@@ -235,26 +209,6 @@ class TaijiPlatform(BasePlatform):
         # 返回 Excel 文件路径。
         return output_path
 
-    # 定义平台导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        使用协议查询结果生成 Excel 文件。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: Excel 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 调用本地 Excel 落地流程。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义主查询方法。
     def query_taiji_data(self, data_type, start_date, end_date):
@@ -353,24 +307,6 @@ class TaijiPlatform(BasePlatform):
         # 抛出未接入数据类型异常。
         raise ValueError(f"{self.company_name} 暂不支持数据类型：{data_type}")
 
-    # 定义登录状态确保方法。
-    def ensure_login(self):
-
-        """
-        确保当前协议会话已完成登录。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断当前会话是否已登录。
-        if self.logged_in:
-
-            # 已登录时直接返回。
-            return
-
-        # 执行平台登录流程。
-        self.login()
 
     # 定义查询日期解析方法。
     def resolve_query_dates(self, data_type, start_date, end_date):
@@ -409,34 +345,6 @@ class TaijiPlatform(BasePlatform):
         # 返回流向日期范围。
         return resolved_start_date, resolved_end_date
 
-    # 定义日期范围校验方法。
-    def validate_query_range(self, start_date, end_date):
-
-        """
-        校验流向查询日期范围。
-
-        :param start_date: 查询开始日期。
-        :type start_date: str
-        :param end_date: 查询结束日期。
-        :type end_date: str
-        :return: None。
-        :rtype: None
-        """
-
-        # 解析开始日期对象。
-        start_value = datetime.strptime(start_date, "%Y-%m-%d")
-
-        # 解析结束日期对象。
-        end_value = datetime.strptime(end_date, "%Y-%m-%d")
-
-        # 判断日期范围顺序是否有效。
-        if start_value <= end_value:
-
-            # 有效日期范围时直接返回。
-            return
-
-        # 抛出开始日期晚于结束日期异常。
-        raise ValueError(f"{self.company_name} 查询开始日期不能晚于结束日期：{start_date} > {end_date}")
 
     # 定义查询日志分隔线打印方法。
     def print_query_section(self, data_type, start_date, end_date):

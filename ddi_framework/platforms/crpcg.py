@@ -146,8 +146,8 @@ class CrpcgPlatform(BasePlatform):
         # 创建默认 TLS 校验上下文。
         ssl_context = ssl.create_default_context()
 
-        # 启用目标旧服务器必需的 TLS 重新协商兼容选项。
-        ssl_context.options |= ssl.OP_LEGACY_SERVER_CONNECT
+        # 启用目标旧服务器必需的 TLS 重新协商兼容选项（低版本运行时缺失该选项时跳过）。
+        ssl_context.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0)
 
         # 使用受限兼容上下文替换当前平台会话的 HTTPS 处理器。
         self.http.opener = build_opener(HTTPCookieProcessor(self.http.cookie_jar), HTTPSHandler(context=ssl_context))
@@ -328,26 +328,6 @@ class CrpcgPlatform(BasePlatform):
         # 返回 Excel 文件路径。
         return output_path
 
-    # 定义协议导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        使用协议查询结果生成本地 Excel 文件。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: Excel 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 调用查询并落地 Excel 的统一流程。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义库存命名日期解析方法。
     def resolve_output_query_date(self, data_type, start_date=None, end_date=None):

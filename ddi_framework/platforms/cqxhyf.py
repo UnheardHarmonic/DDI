@@ -440,26 +440,6 @@ class CqxhyfPlatform(BasePlatform):
         # 返回协议分页查询结果。
         return self.fetch_protocol_rows(data_type, start_date, end_date)
 
-    # 定义平台导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出指定类型业务数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 复用查询落地 Excel 逻辑。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义查询落地 Excel 方法。
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
@@ -537,27 +517,6 @@ class CqxhyfPlatform(BasePlatform):
         # 返回流向类使用的查询开始日期。
         return start_date or end_date
 
-    # 定义数据类型分隔线打印方法。
-    def print_query_section(self, data_type, start_date, end_date):
-
-        """
-        打印数据类型查询分隔线。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: None。
-        :rtype: None
-        """
-
-        # 打印标准阶段分隔线。
-        self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date or "", "cyan"), self.ph.kv("结束日期", end_date or "", "cyan")))
-
-        # 返回空结果。
-        return None
 
     # 定义协议分页查询方法。
     def fetch_protocol_rows(self, data_type, start_date, end_date):
@@ -707,24 +666,6 @@ class CqxhyfPlatform(BasePlatform):
         # 返回规范数据类型。
         return canonical_data_type
 
-    # 定义登录状态保证方法。
-    def ensure_logged_in(self):
-
-        """
-        确保当前协议会话已经登录。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断当前会话是否尚未登录。
-        if not self.logged_in:
-
-            # 执行平台登录。
-            self.login()
-
-        # 返回空结果。
-        return None
 
     # 定义首个端点地址构建方法。
     def build_endpoint_url(self, endpoint_definition, start_date, end_date):

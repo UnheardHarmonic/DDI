@@ -199,32 +199,6 @@ class HuaxinPlatform(BasePlatform):
         # 返回不含令牌的登录摘要。
         return {"登录状态": "成功", "Cookie数量": len(list(self.http.cookie_jar))}
 
-    # 定义 Cookie 保存方法。
-    def save_cookie(self, output_dir):
-
-        """
-        保存当前 HTTP Cookie，不保存访问令牌。
-
-        :param output_dir: Cookie 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建 Cookie 输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存当前 HTTP Cookie。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
 
     # 定义原始数据查询方法。
     def query_flow(self, data_type, start_date=None, end_date=None):
@@ -290,26 +264,6 @@ class HuaxinPlatform(BasePlatform):
         # 返回 Excel 文件路径。
         return output_path
 
-    # 定义平台导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        使用协议查询结果生成 Excel 文件。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: Excel 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 调用 Excel 查询落地流程。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义 FineReport 主查询方法。
     def query_huaxin_data(self, data_type, start_date, end_date):
@@ -969,24 +923,6 @@ class HuaxinPlatform(BasePlatform):
         # 返回 Base64 编码密文。
         return base64.b64encode(cipher_bytes).decode("ascii")
 
-    # 定义登录状态确保方法。
-    def ensure_login(self):
-
-        """
-        确保当前协议会话已完成 FineDecision 登录。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断当前会话是否已经登录。
-        if self.logged_in:
-
-            # 已登录时直接返回。
-            return
-
-        # 执行 FineDecision 登录流程。
-        self.login()
 
     # 定义数据类型校验方法。
     def validate_data_type(self, data_type):

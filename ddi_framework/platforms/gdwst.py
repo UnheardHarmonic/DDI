@@ -570,23 +570,6 @@ class GdwstPlatform(BasePlatform):
         # 返回去除两端空白后的密码。
         return str(self.account["密码"]).strip()
 
-    # 定义站点根地址构建方法。
-    def build_origin(self, url):
-
-        """
-        根据页面地址构建站点根地址。
-
-        :param url: 页面地址。
-        :type url: str
-        :return: 站点根地址。
-        :rtype: str
-        """
-
-        # 解析页面地址。
-        parsed_url = urlparse(url)
-
-        # 返回协议与域名组成的站点根地址。
-        return f"{parsed_url.scheme}://{parsed_url.netloc}"
 
     # 定义 Cookie 保存方法。
     def save_cookie(self, output_dir):
@@ -670,25 +653,6 @@ class GdwstPlatform(BasePlatform):
         # 返回查询结果数据行。
         return query_result["rows"]
 
-    # 定义流向导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出广东五嗣堂医药流向数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :return: 导出文件路径。
-        :rtype: str
-        """
-
-        # 使用分页查询结果生成本地 Excel 文件。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义查询落地 Excel 方法。
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
@@ -1136,63 +1100,8 @@ class GdwstPlatform(BasePlatform):
         # 返回表头配置。
         return headers
 
-    # 定义输出文件名构建方法。
-    def build_output_file_name(self, data_type, start_date, end_date):
 
-        """
-        构建输出文件名。
 
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
-
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
-
-    # 定义流向月份标签构建方法。
-    def build_month_label(self, start_date):
-
-        """
-        构建流向文件月份标签。
-
-        :param start_date: 查询开始日期。
-        :type start_date: str
-        :return: 月份标签。
-        :rtype: str
-        """
-
-        # 解析开始日期。
-        date_value = datetime.strptime(start_date, "%Y-%m-%d")
-
-        # 返回 yy.m月 标签。
-        return f"{date_value.year % 100}.{date_value.month}月"
-
-    # 定义库存日期标签构建方法。
-    def build_stock_date_label(self, end_date):
-
-        """
-        构建库存文件日期标签。
-
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 库存日期标签。
-        :rtype: str
-        """
-
-        # 读取导出当天日期。
-        date_text = datetime.now().strftime("%Y-%m-%d")
-
-        # 解析导出日期。
-        date_value = datetime.strptime(date_text, "%Y-%m-%d")
-
-        # 返回 yy.m.d 标签。
-        return f"{date_value.year % 100}.{date_value.month}.{date_value.day}"
 
     # 定义通用 Excel 写入方法。
     def write_rows_to_excel(self, rows, headers, output_path, sheet_name):

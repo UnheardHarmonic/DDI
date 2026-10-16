@@ -684,26 +684,6 @@ class HxyxtPlatform(BasePlatform):
         # 返回查询结果行。
         return query_result["rows"]
 
-    # 定义导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出指定数据类型业务数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 使用协议查询结果生成本地 Excel。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义查询落地方法。
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
@@ -970,24 +950,6 @@ class HxyxtPlatform(BasePlatform):
         # 抛出不支持的数据类型异常。
         raise ValueError(f"{self.company_name} 仅支持 配送流向，当前数据类型：{data_type}")
 
-    # 定义登录状态确认方法。
-    def ensure_login(self):
-
-        """
-        确保当前协议会话已经登录。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断当前是否已经登录。
-        if self.logged_in:
-
-            # 已登录时直接返回。
-            return
-
-        # 执行登录流程。
-        self.login()
 
     # 定义日期范围解析方法。
     def resolve_query_dates(self, start_date, end_date):

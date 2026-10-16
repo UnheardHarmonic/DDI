@@ -343,32 +343,6 @@ class ShhfyyPlatform(BasePlatform):
         # 返回登录结果。
         return login_result
 
-    # 定义 Cookie 保存方法。
-    def save_cookie(self, output_dir):
-
-        """
-        保存协议会话 Cookie。
-
-        :param output_dir: Cookie 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建 Cookie 输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存 Cookie 文件。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
 
     # 定义登录请求体构建方法。
     def build_login_payload(self):
@@ -483,26 +457,6 @@ class ShhfyyPlatform(BasePlatform):
         # 返回字符串化员工编号。
         return str(employee_id or "").strip()
 
-    # 定义平台导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出指定类型流向数据并生成 Excel。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 返回查询落地文件。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义平台查询方法。
     def query_flow(self, data_type, start_date=None, end_date=None):
@@ -574,27 +528,6 @@ class ShhfyyPlatform(BasePlatform):
         # 返回 Excel 文件路径。
         return target_path
 
-    # 定义数据类型分隔线打印方法。
-    def print_query_section(self, data_type, start_date, end_date):
-
-        """
-        打印数据类型查询分隔线。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: None。
-        :rtype: None
-        """
-
-        # 打印标准阶段分隔线。
-        self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date or "", "cyan"), self.ph.kv("结束日期", end_date or "", "cyan")))
-
-        # 返回空结果。
-        return None
 
     # 定义协议查询方法。
     def fetch_protocol_rows(self, data_type, start_date, end_date):
@@ -1300,20 +1233,3 @@ class ShhfyyPlatform(BasePlatform):
         # 返回流向类使用的开始日期。
         return self.normalize_date_text(start_date) or self.normalize_date_text(end_date)
 
-    # 定义平台原点地址构建方法。
-    def build_origin(self, url):
-
-        """
-        构建站点原点地址。
-
-        :param url: 原始地址。
-        :type url: str
-        :return: 原点地址。
-        :rtype: str
-        """
-
-        # 解析 URL。
-        parsed_url = urlparse(url)
-
-        # 返回协议与主机拼接的原点地址。
-        return f"{parsed_url.scheme}://{parsed_url.netloc}"

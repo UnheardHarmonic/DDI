@@ -1946,36 +1946,7 @@ class HxlxPlatform(BasePlatform):
         # 返回带用户编码的入口地址。
         return f"{self.login_page_url}?usercode={quote(self.clean_login_name().upper())}"
 
-    # 定义站点根地址构建方法。
-    def build_origin(self, url):
 
-        """
-        构建 URL 站点根地址。
-
-        :param url: 原始 URL。
-        :type url: str
-        :return: 站点根地址。
-        :rtype: str
-        """
-
-        # 解析 URL。
-        parsed_url = urlparse(url)
-
-        # 返回站点根地址。
-        return f"{parsed_url.scheme}://{parsed_url.netloc}"
-
-    # 定义账号读取方法。
-    def clean_login_name(self):
-
-        """
-        读取登录账号。
-
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回清理后的登录账号。
-        return str(self.account.get("账号", "")).strip()
 
     # 定义密码读取方法。
     def clean_login_password(self):
@@ -2140,24 +2111,6 @@ class HxlxPlatform(BasePlatform):
             # 抛出数据类型异常。
             raise ValueError(f"洪兴流向系统暂未接入数据类型：{data_type}")
 
-    # 定义输出文件名构建方法。
-    def build_output_file_name(self, data_type, start_date, end_date):
-
-        """
-        构建输出文件名。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
-
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
 
     # 定义 Excel 写入方法。
     def write_rows_to_excel(self, rows, headers, output_path, sheet_name):

@@ -5,6 +5,15 @@
 本模块定义各商业平台适配器需要实现的统一方法，入口程序通过这些方法执行登录、查询、导出和 Excel 落地。
 """
 
+# 导入操作系统路径模块。
+import os
+
+# 导入 URL 解析模块。
+from urllib.parse import urlparse
+
+# 导入日期时间模块。
+from datetime import datetime
+
 # 导入公共下载命名工具。
 from ddi_framework.download_watcher import DownloadWatcher
 
@@ -145,27 +154,6 @@ class BasePlatform:
         # 调用既有协议导出实现。
         return self.export_flow(data_type, start_date=date_range.start_date, end_date=date_range.end_date, output_dir=output_dir)
 
-    # 定义平台导出抽象方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出指定类型流向数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 导出目录。
-        :type output_dir: str | None
-        :return: 导出结果。
-        :rtype: dict
-        """
-
-        # 要求子类实现导出流程。
-        raise NotImplementedError
-
     # 定义平台查询抽象方法。
     def query_flow(self, data_type, start_date=None, end_date=None):
 
@@ -205,6 +193,214 @@ class BasePlatform:
 
         # 要求子类实现查询落地流程。
         raise NotImplementedError
+
+    # 定义平台导出方法。
+    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
+
+        """
+        使用协议查询结果生成本地 Excel 文件。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param start_date: 查询开始日期。
+        :type start_date: str | None
+        :param end_date: 查询结束日期。
+        :type end_date: str | None
+        :param output_dir: Excel 输出目录。
+        :type output_dir: str | None
+        :return: Excel 文件路径。
+        :rtype: str
+        """
+
+        # 调用查询并落地 Excel 的统一流程。
+        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
+
+    # 定义登录态保障方法。
+    def ensure_login(self):
+
+        """
+        确保当前协议客户端已经建立有效登录态。
+
+        :return: None。
+        :rtype: None
+        """
+
+        # 判断当前会话已经完成登录。
+        if self.logged_in:
+
+            # 结束重复登录处理。
+            return
+
+        # 执行平台登录流程。
+        self.login()
+
+    # 定义登录态检查方法。
+    def ensure_logged_in(self):
+
+        """
+        确保当前协议会话已经登录。
+
+        :return: None。
+        :rtype: None
+        """
+
+        # 判断当前是否未登录。
+        if not self.logged_in:
+
+            # 执行登录流程。
+            self.login()
+
+        # 返回空结果。
+        return None
+
+    # 定义 Cookie 保存方法。
+    def save_cookie(self, output_dir):
+
+        """
+        保存当前协议会话 Cookie 供公共任务服务记录。
+
+        :param output_dir: Cookie 输出目录。
+        :type output_dir: str
+        :return: Cookie 文件路径。
+        :rtype: str
+        """
+
+        # 创建 Cookie 输出目录。
+        os.makedirs(output_dir, exist_ok=True)
+
+        # 构建 Cookie 输出文件路径。
+        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
+
+        # 保存当前协议会话 Cookie。
+        self.http.save_cookie_file(cookie_path)
+
+        # 返回 Cookie 文件路径。
+        return cookie_path
+
+    # 定义查询日期范围校验方法。
+    def validate_query_range(self, start_date, end_date):
+
+        """
+        校验查询日期范围。
+
+        :param start_date: 查询开始日期。
+        :type start_date: str
+        :param end_date: 查询结束日期。
+        :type end_date: str
+        :return: None。
+        :rtype: None
+        """
+
+        # 解析查询开始日期。
+        start_value = datetime.strptime(start_date, "%Y-%m-%d")
+
+        # 解析查询结束日期。
+        end_value = datetime.strptime(end_date, "%Y-%m-%d")
+
+        # 判断开始日期是否不晚于结束日期。
+        if start_value <= end_value:
+
+            # 日期范围合法时直接返回。
+            return
+
+        # 抛出日期范围非法异常。
+        raise ValueError(f"{self.company_name} 查询开始日期不能晚于结束日期：{start_date} > {end_date}")
+
+    # 定义查询分隔线打印方法。
+    def print_query_section(self, data_type, start_date, end_date):
+
+        """
+        打印数据类型查询分隔线。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param start_date: 查询开始日期。
+        :type start_date: str | None
+        :param end_date: 查询结束日期。
+        :type end_date: str | None
+        :return: None。
+        :rtype: None
+        """
+
+        # 打印标准阶段分隔线。
+        self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date or "", "cyan"), self.ph.kv("结束日期", end_date or "", "cyan")))
+
+        # 返回空结果。
+        return None
+
+    # 定义已有文件删除方法。
+    def remove_existing_file(self, output_path):
+
+        """
+        删除已有同名输出文件。
+
+        :param output_path: 输出文件路径。
+        :type output_path: str
+        :return: None。
+        :rtype: None
+        """
+
+        # 判断目标文件是否存在。
+        if not os.path.exists(output_path):
+
+            # 无需删除不存在的文件。
+            return
+
+        # 捕获文件删除异常。
+        try:
+
+            # 删除已有目标文件。
+            os.remove(output_path)
+
+        # 处理文件被占用导致的删除异常。
+        except PermissionError as error:
+
+            # 抛出带业务路径的文件占用异常。
+            raise PermissionError(f"无法覆盖文件，请先关闭已打开的 Excel 文件：{output_path}") from error
+
+    # 定义登录账号读取方法。
+    def clean_login_name(self):
+
+        """
+        读取登录账号。
+
+        :return: 登录账号。
+        :rtype: str
+        """
+
+        # 返回清洗后的账号。
+        return str(self.account.get("账号", "")).strip()
+
+    # 定义登录密码读取方法。
+    def clean_login_password(self):
+
+        """
+        读取登录密码。
+
+        :return: 登录密码。
+        :rtype: str
+        """
+
+        # 返回清洗后的密码。
+        return str(self.account.get("密码", "")).strip()
+
+    # 定义站点根地址构建方法。
+    def build_origin(self, url):
+
+        """
+        构建站点源地址。
+
+        :param url: 任意站点地址。
+        :type url: str
+        :return: 源地址。
+        :rtype: str
+        """
+
+        # 解析 URL 地址。
+        parsed_url = urlparse(url)
+
+        # 返回协议与主机地址。
+        return f"{parsed_url.scheme}://{parsed_url.netloc}"
 
     # 定义标准输出文件名构建方法。
     def build_output_file_name(self, data_type, start_date=None, end_date=None):

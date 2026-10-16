@@ -378,31 +378,7 @@ class HljdzpaPlatform(BasePlatform):
         # 返回接口消息或原始响应摘要。
         return str(response_data.get("msg") or response_data.get("message") or response_data)
 
-    # 定义登录账号清洗方法。
-    def clean_login_name(self):
 
-        """
-        读取并清洗登录账号。
-
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回去除两端空白后的登录账号。
-        return str(self.account.get("账号", "")).strip()
-
-    # 定义登录密码清洗方法。
-    def clean_login_password(self):
-
-        """
-        读取并清洗登录密码。
-
-        :return: 登录密码。
-        :rtype: str
-        """
-
-        # 返回去除两端空白后的登录密码。
-        return str(self.account.get("密码", "")).strip()
 
     # 定义 Cookie 保存方法。
     def save_cookie(self, output_dir):
@@ -486,26 +462,6 @@ class HljdzpaPlatform(BasePlatform):
         # 返回查询结果行。
         return query_result["rows"]
 
-    # 定义流向导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出黑龙江大众平安业务数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 使用分页查询结果生成本地 Excel 文件。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义查询落地 Excel 方法。
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
@@ -938,66 +894,8 @@ class HljdzpaPlatform(BasePlatform):
         # 返回库存表头配置。
         return [("创建时间", "createtime"), ("业务机构", "busno"), ("机构名称", "orgname"), ("供应商编号", "vencusno"), ("供应商编码", "vencuscode"), ("供应商名称", "vencusname"), ("商品ID", "wareid"), ("商品编码", "warecode"), ("商品名称", "warename"), ("规格", "warespec"), ("单位", "wareunit"), ("生产厂家ID", "factoryid"), ("生产厂家", "factoryname"), ("批号ID", "batid"), ("批号", "makeno"), ("数量", "wareqty"), ("进价", "purprice"), ("金额", "amt"), ("生产日期", "makedate"), ("有效期", "invalidate")]
 
-    # 定义输出文件名构建方法。
-    def build_output_file_name(self, data_type, start_date, end_date):
 
-        """
-        构建输出文件名。
 
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
-
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
-
-    # 定义流向月份标签构建方法。
-    def build_month_label(self, start_date):
-
-        """
-        构建流向文件月份标签。
-
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :return: 月份标签。
-        :rtype: str
-        """
-
-        # 读取日期文本。
-        date_text = start_date or datetime.now().strftime("%Y-%m-%d")
-
-        # 解析日期文本。
-        date_value = datetime.strptime(date_text, "%Y-%m-%d")
-
-        # 返回 yy.m月 标签。
-        return f"{date_value.year % 100}.{date_value.month}月"
-
-    # 定义库存日期标签构建方法。
-    def build_stock_date_label(self, end_date):
-
-        """
-        构建库存文件日期标签。
-
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 库存日期标签。
-        :rtype: str
-        """
-
-        # 读取导出当天日期。
-        date_text = datetime.now().strftime("%Y-%m-%d")
-
-        # 解析导出日期。
-        date_value = datetime.strptime(date_text, "%Y-%m-%d")
-
-        # 返回 yy.m.d 标签。
-        return f"{date_value.year % 100}.{date_value.month}.{date_value.day}"
 
     # 定义通用 Excel 写入方法。
     def write_rows_to_excel(self, rows, headers, output_path, sheet_name):

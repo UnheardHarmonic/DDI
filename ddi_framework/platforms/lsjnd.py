@@ -568,26 +568,6 @@ class LsjndPlatform(BasePlatform):
         # 返回 Excel 文件路径。
         return output_path
 
-    # 定义统一导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        使用 HTML 查询结果生成本地 Excel。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: Excel 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 调用统一查询并落地流程。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义完整 HTML 分页查询方法。
     def query_lxk_data(self, data_type, start_date, end_date):

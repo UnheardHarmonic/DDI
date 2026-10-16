@@ -345,31 +345,7 @@ class KcshopPlatform(BasePlatform):
         # 返回登录请求字段。
         return {"account": self.clean_login_name(), "password": self.clean_login_password(), "captcha": captcha_code}
 
-    # 定义登录账号清洗方法。
-    def clean_login_name(self):
 
-        """
-        获取清洗后的登录账号。
-
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回去除首尾空白后的登录账号。
-        return str(self.account.get("账号", "")).strip()
-
-    # 定义登录密码清洗方法。
-    def clean_login_password(self):
-
-        """
-        获取清洗后的登录密码。
-
-        :return: 登录密码。
-        :rtype: str
-        """
-
-        # 返回去除首尾空白后的登录密码。
-        return str(self.account.get("密码", "")).strip()
 
     # 定义登录令牌提取方法。
     def extract_login_token(self, response_data):
@@ -401,32 +377,6 @@ class KcshopPlatform(BasePlatform):
         # 返回登录令牌。
         return token
 
-    # 定义 Cookie 保存方法。
-    def save_cookie(self, output_dir):
-
-        """
-        保存当前登录 Cookie。
-
-        :param output_dir: 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存 Cookie 文件。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
 
     # 定义业务数据查询方法。
     def query_flow(self, data_type, start_date=None, end_date=None):
@@ -450,26 +400,6 @@ class KcshopPlatform(BasePlatform):
         # 返回查询结果行。
         return query_result["rows"]
 
-    # 定义业务数据导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出 KCShop 业务数据。
-
-        :param data_type: 业务数据类型。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: 导出文件路径。
-        :rtype: str
-        """
-
-        # 使用查询结果生成本地 Excel 文件。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义查询并生成 Excel 方法。
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
@@ -613,24 +543,6 @@ class KcshopPlatform(BasePlatform):
         # 返回查询结果与表头。
         return {"rows": all_rows, "headers": headers or self.build_default_headers(data_type)}
 
-    # 定义登录状态确认方法。
-    def ensure_login(self):
-
-        """
-        确保当前会话已经完成登录。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断登录状态是否已经存在。
-        if self.logged_in:
-
-            # 登录状态存在时直接返回。
-            return
-
-        # 执行登录流程。
-        self.login()
 
     # 定义查询阶段标题打印方法。
     def print_query_section(self, data_type, start_date, end_date):
@@ -1007,24 +919,6 @@ class KcshopPlatform(BasePlatform):
             # 抛出未接入数据类型异常。
             raise NotImplementedError(f"当前 KCShop 暂未接入：{data_type}")
 
-    # 定义输出文件名构建方法。
-    def build_output_file_name(self, data_type, start_date, end_date):
-
-        """
-        构建输出文件名。
-
-        :param data_type: 业务数据类型。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
-
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
 
     # 定义中文表头构建方法。
     def build_display_headers(self, data_type, headers):
@@ -1150,32 +1044,3 @@ class KcshopPlatform(BasePlatform):
         # 关闭工作簿对象。
         workbook.close()
 
-    # 定义同名文件删除方法。
-    def remove_existing_file(self, output_path):
-
-        """
-        删除已经存在的同名输出文件。
-
-        :param output_path: 输出文件路径。
-        :type output_path: str
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断目标文件是否存在。
-        if not os.path.exists(output_path):
-
-            # 文件不存在时直接返回。
-            return
-
-        # 捕获文件删除异常。
-        try:
-
-            # 删除已有目标文件。
-            os.remove(output_path)
-
-        # 处理文件被占用导致的删除异常。
-        except PermissionError as error:
-
-            # 抛出业务路径文件占用异常。
-            raise PermissionError(f"无法覆盖文件，请先关闭已打开的 Excel 文件：{output_path}") from error

@@ -428,32 +428,6 @@ class HreportPlatform(BasePlatform):
         # 返回去除两端空白后的密码。
         return str(self.account["密码"]).strip()
 
-    # 定义 Cookie 保存方法。
-    def save_cookie(self, output_dir):
-
-        """
-        保存当前登录 Cookie。
-
-        :param output_dir: 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存 Cookie 文件。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
 
     # 定义流向查询方法。
     def query_flow(self, data_type, start_date=None, end_date=None):
@@ -1512,24 +1486,6 @@ class HreportPlatform(BasePlatform):
         # 返回当前数据类型对应的功能编号。
         return mapping[data_type]
 
-    # 定义输出文件名构建方法。
-    def build_output_file_name(self, data_type, start_date, end_date):
-
-        """
-        构建HReport输出文件名。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
-
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
 
     # 定义库存导出命名日期解析方法。
     def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
@@ -1556,44 +1512,7 @@ class HreportPlatform(BasePlatform):
         # 返回流向查询开始日期。
         return start_date or end_date
 
-    # 定义月份标签构建方法。
-    def build_month_label(self, start_date):
 
-        """
-        构建HReport月份标签。
-
-        :param start_date: 查询开始日期。
-        :type start_date: str
-        :return: 月份标签。
-        :rtype: str
-        """
-
-        # 解析开始日期。
-        date_value = datetime.strptime(start_date, "%Y-%m-%d")
-
-        # 返回 yy.m月 标签。
-        return f"{date_value.year % 100}.{date_value.month}月"
-
-    # 定义库存日期标签构建方法。
-    def build_stock_date_label(self, end_date):
-
-        """
-        构建HReport库存日期标签。
-
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 库存日期标签。
-        :rtype: str
-        """
-
-        # 读取导出当天日期。
-        date_text = datetime.now().strftime("%Y-%m-%d")
-
-        # 解析导出日期。
-        date_value = datetime.strptime(date_text, "%Y-%m-%d")
-
-        # 返回 yy.m.d 标签。
-        return f"{date_value.year % 100}.{date_value.month}.{date_value.day}"
 
     # 定义通用 Excel 写入方法。
     def write_rows_to_excel(self, rows, headers, output_path, sheet_name):

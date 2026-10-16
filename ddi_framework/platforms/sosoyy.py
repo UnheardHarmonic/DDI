@@ -338,26 +338,6 @@ class SosoyyPlatform(BasePlatform):
         # 返回 Excel 输出路径。
         return output_path
 
-    # 定义平台导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        使用协议查询结果生成本地 Excel 文件。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: Excel 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 调用查询并落地 Excel 的统一流程。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义协议主查询方法。
     def query_sosoyy_data(self, data_type, start_date, end_date):
@@ -420,24 +400,6 @@ class SosoyyPlatform(BasePlatform):
         # 抛出未接入数据类型异常。
         raise ValueError(f"{self.company_name} 暂不支持数据类型：{data_type}")
 
-    # 定义登录态确保方法。
-    def ensure_login(self):
-
-        """
-        确保当前协议客户端已经建立有效登录态。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断当前会话已经完成登录。
-        if self.logged_in:
-
-            # 结束重复登录处理。
-            return
-
-        # 执行平台登录流程。
-        self.login()
 
     # 定义查询日期解析方法。
     def resolve_query_dates(self, data_type, start_date, end_date):
@@ -476,34 +438,6 @@ class SosoyyPlatform(BasePlatform):
         # 返回流向查询日期范围。
         return resolved_start_date, resolved_end_date
 
-    # 定义日期范围校验方法。
-    def validate_query_range(self, start_date, end_date):
-
-        """
-        校验开始日期不晚于结束日期。
-
-        :param start_date: 查询开始日期。
-        :type start_date: str
-        :param end_date: 查询结束日期。
-        :type end_date: str
-        :return: None。
-        :rtype: None
-        """
-
-        # 解析开始日期对象。
-        start_value = datetime.strptime(start_date, "%Y-%m-%d")
-
-        # 解析结束日期对象。
-        end_value = datetime.strptime(end_date, "%Y-%m-%d")
-
-        # 判断日期范围顺序是否正确。
-        if start_value <= end_value:
-
-            # 结束有效日期范围校验。
-            return
-
-        # 抛出无效日期范围异常。
-        raise ValueError(f"{self.company_name} 查询开始日期不能晚于结束日期：{start_date} > {end_date}")
 
     # 定义查询阶段日志方法。
     def print_query_section(self, data_type, start_date, end_date):

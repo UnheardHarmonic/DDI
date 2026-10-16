@@ -375,27 +375,7 @@ class DdkyPlatform(BasePlatform):
         # 返回登录表单字段。
         return {"username": self.clean_login_name(), "password": self.clean_login_password(), "verify": captcha_code, "ticket": ticket, "remember": "1"}
 
-    def clean_login_name(self):
-        """
-        读取登录账号。
 
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回清洗后的账号。
-        return str(self.account.get("账号", "")).strip()
-
-    def clean_login_password(self):
-        """
-        读取登录密码。
-
-        :return: 登录密码。
-        :rtype: str
-        """
-
-        # 返回清洗后的密码。
-        return str(self.account.get("密码", "")).strip()
 
     def load_system_init(self):
         """
@@ -463,24 +443,6 @@ class DdkyPlatform(BasePlatform):
         # 查询业务数据并读取行集合。
         return self.query_ddky_data(data_type, start_date, end_date)["rows"]
 
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-        """
-        导出指定业务类型数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 使用查询结果生成本地 Excel 文件。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
         """
@@ -632,22 +594,6 @@ class DdkyPlatform(BasePlatform):
         # 返回查询数据与表头。
         return {"rows": all_rows, "headers": DATA_TYPE_HEADERS[data_type]}
 
-    def ensure_login(self):
-        """
-        确保当前适配器已经完成登录。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 判断登录状态是否已经存在。
-        if self.logged_in:
-
-            # 登录状态存在时直接返回。
-            return
-
-        # 执行登录流程。
-        self.login()
 
     def print_query_section(self, data_type, start_date, end_date):
         """
@@ -964,52 +910,8 @@ class DdkyPlatform(BasePlatform):
         # 返回状态码成功判断结果。
         return str(response_data.get("code")) == "0"
 
-    def build_output_file_name(self, data_type, start_date, end_date):
-        """
-        构建输出文件名。
 
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
 
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
-
-    def build_month_label(self, start_date):
-        """
-        构建流向文件月份标签。
-
-        :param start_date: 查询开始日期。
-        :type start_date: str
-        :return: 月份标签。
-        :rtype: str
-        """
-
-        # 解析开始日期。
-        date_value = datetime.strptime(start_date, "%Y-%m-%d")
-
-        # 返回 yy.m月 标签。
-        return f"{date_value.year % 100}.{date_value.month}月"
-
-    def build_stock_date_label(self):
-        """
-        构建库存导出日期标签。
-
-        :return: 日期标签。
-        :rtype: str
-        """
-
-        # 读取当前日期。
-        date_value = datetime.now()
-
-        # 返回 yy.m.d 标签。
-        return f"{date_value.year % 100}.{date_value.month}.{date_value.day}"
 
     def write_rows_to_excel(self, rows, headers, output_path, sheet_name):
         """
@@ -1091,21 +993,6 @@ class DdkyPlatform(BasePlatform):
             # 删除已存在的输出文件。
             os.remove(output_path)
 
-    def build_origin(self, url):
-        """
-        构建站点源地址。
-
-        :param url: 任意站点地址。
-        :type url: str
-        :return: 源地址。
-        :rtype: str
-        """
-
-        # 解析 URL 地址。
-        parsed_url = urlparse(url)
-
-        # 返回协议与主机地址。
-        return f"{parsed_url.scheme}://{parsed_url.netloc}"
 
     def user_agent(self):
         """

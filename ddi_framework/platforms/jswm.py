@@ -264,24 +264,6 @@ class JswmPlatform(JsayPlatform):
         # 返回查询结果行。
         return query_result["rows"]
 
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-        """
-        导出指定类型业务数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 使用查询结果生成本地 Excel。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
         """

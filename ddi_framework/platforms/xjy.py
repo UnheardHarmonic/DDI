@@ -182,53 +182,7 @@ class XjyPlatform(BasePlatform):
         # 返回登录结果。
         return self.login_result
 
-    # 定义 Cookie 保存方法。
-    def save_cookie(self, output_dir):
 
-        """
-        保存协议会话 Cookie。
-
-        :param output_dir: Cookie 输出目录。
-        :type output_dir: str
-        :return: Cookie 文件路径。
-        :rtype: str
-        """
-
-        # 创建 Cookie 输出目录。
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 构建 Cookie 文件路径。
-        cookie_path = os.path.join(output_dir, f"{self.company_name}_cookie.json")
-
-        # 保存 Cookie 文件。
-        self.http.save_cookie_file(cookie_path)
-
-        # 打印 Cookie 保存日志。
-        self.ph.success(self.ph.kv("登录 Cookie 已保存", self.ph.path(cookie_path), "green"))
-
-        # 返回 Cookie 文件路径。
-        return cookie_path
-
-    # 定义平台导出方法。
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-
-        """
-        导出安徽新聚源平台数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: Excel 文件路径。
-        :rtype: str
-        """
-
-        # 返回本地生成的 Excel 文件。
-        return self.query_flow_to_excel(data_type, start_date=start_date, end_date=end_date, output_dir=output_dir)
 
     # 定义平台查询方法。
     def query_flow(self, data_type, start_date=None, end_date=None):
@@ -297,27 +251,6 @@ class XjyPlatform(BasePlatform):
         # 返回 Excel 文件路径。
         return target_path
 
-    # 定义数据类型分隔线打印方法。
-    def print_query_section(self, data_type, start_date, end_date):
-
-        """
-        打印数据类型查询分隔线。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: None。
-        :rtype: None
-        """
-
-        # 打印标准阶段分隔线。
-        self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date or "", "cyan"), self.ph.kv("结束日期", end_date or "", "cyan")))
-
-        # 返回空结果。
-        return None
 
     # 定义协议查询方法。
     def fetch_protocol_rows(self, data_type, start_date, end_date):
@@ -652,24 +585,6 @@ class XjyPlatform(BasePlatform):
         # 返回拼接后的业务页面地址。
         return urljoin(self.login_page_url, page_path.lstrip("/"))
 
-    # 定义输出文件名构建方法。
-    def build_output_file_name(self, data_type, start_date, end_date):
-
-        """
-        构建输出文件名。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名。
-        :rtype: str
-        """
-
-        # Delegate standard naming to the base platform.
-        return super().build_output_file_name(data_type, start_date, end_date)
 
     # 定义页面日期格式化方法。
     def format_page_date(self, date_value):
@@ -746,18 +661,6 @@ class XjyPlatform(BasePlatform):
         # 返回空结果。
         return None
 
-    # 定义登录名读取方法。
-    def clean_login_name(self):
-
-        """
-        读取登录账号。
-
-        :return: 登录账号。
-        :rtype: str
-        """
-
-        # 返回去除空白后的账号。
-        return str(self.account.get("账号", "")).strip()
 
     # 定义登录密码读取方法。
     def clean_login_password(self):
