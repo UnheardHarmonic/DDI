@@ -28,8 +28,6 @@ import time
 # 导入日期时间解析对象。
 from datetime import datetime
 
-# 导入 Cookie 容器。
-from http.cookiejar import CookieJar
 
 # 导入 URL 表单编码函数。
 from urllib.parse import quote
@@ -40,17 +38,11 @@ from urllib.parse import urlencode
 # 导入 URL 错误类型。
 from urllib.error import HTTPError
 
-# 导入 Cookie 处理器。
-from urllib.request import HTTPCookieProcessor
 
-# 导入 HTTPS 处理器。
-from urllib.request import HTTPSHandler
 
 # 导入 URL 请求对象。
 from urllib.request import Request
 
-# 导入 URL 打开器构建函数。
-from urllib.request import build_opener
 
 # 导入 RSA 公钥序列化工具。
 from cryptography.hazmat.primitives import serialization
@@ -63,6 +55,8 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from ddi_framework.reverse_utils import md5_hex
 
 from ddi_framework import apply_standard_excel_style
+# 导入协议请求客户端。
+from ddi_framework import ProtocolHttpClient
 
 # 导入平台适配器基类。
 from ddi_framework import BasePlatform
@@ -186,14 +180,17 @@ class HxyxtPlatform(BasePlatform):
         # 保存最大查询天数。
         self.max_query_days = int(account.get("最大查询天数", 90))
 
-        # 初始化 Cookie 容器。
-        self.cookie_jar = CookieJar()
-
         # 初始化 HTTPS 上下文。
         self.ssl_context = ssl._create_unverified_context()
 
-        # 初始化协议请求打开器。
-        self.opener = build_opener(HTTPCookieProcessor(self.cookie_jar), HTTPSHandler(context=self.ssl_context))
+        # 初始化协议请求客户端并托管平台会话。
+        self.http = ProtocolHttpClient(self.site_root_url, ssl_context=self.ssl_context)
+
+        # 引用协议客户端管理的 Cookie 容器。
+        self.cookie_jar = self.http.cookie_jar
+
+        # 引用协议客户端管理的请求打开器。
+        self.opener = self.http.opener
 
         # 初始化 SRM 访问令牌。
         self.access_token = ""

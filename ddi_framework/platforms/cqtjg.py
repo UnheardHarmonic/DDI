@@ -27,23 +27,19 @@ from datetime import timedelta
 # 导入时区模块。
 from datetime import timezone
 
-# 导入 Cookie 容器。
-from http.cookiejar import CookieJar
 
 # 导入 URL 错误类型。
 from urllib.error import HTTPError
 
-# 导入 Cookie 处理器。
-from urllib.request import HTTPCookieProcessor
 
 # 导入 URL 请求对象。
 from urllib.request import Request
 
-# 导入 URL 打开器构建函数。
-from urllib.request import build_opener
 
 # 导入 Excel 统一样式函数。
 from ddi_framework import apply_standard_excel_style
+# 导入协议请求客户端。
+from ddi_framework import ProtocolHttpClient
 
 # 导入平台适配器基类。
 from ddi_framework import BasePlatform
@@ -235,11 +231,14 @@ class CqtjgPlatform(BasePlatform):
         # 保存分页大小。
         self.page_size = int(account.get("分页大小", 300))
 
-        # 初始化 Cookie 容器。
-        self.cookie_jar = CookieJar()
+        # 初始化协议请求客户端并托管平台会话。
+        self.http = ProtocolHttpClient(self.site_root_url)
 
-        # 初始化协议请求打开器。
-        self.opener = build_opener(HTTPCookieProcessor(self.cookie_jar))
+        # 引用协议客户端管理的 Cookie 容器。
+        self.cookie_jar = self.http.cookie_jar
+
+        # 引用协议客户端管理的请求打开器。
+        self.opener = self.http.opener
 
         # 初始化登录令牌。
         self.token = ""
@@ -257,11 +256,14 @@ class CqtjgPlatform(BasePlatform):
         :rtype: None
         """
 
-        # 初始化新的 Cookie 容器。
-        self.cookie_jar = CookieJar()
+        # 重建协议请求客户端与托管会话。
+        self.http = ProtocolHttpClient(self.site_root_url)
 
-        # 初始化新的协议请求打开器。
-        self.opener = build_opener(HTTPCookieProcessor(self.cookie_jar))
+        # 引用新会话的 Cookie 容器。
+        self.cookie_jar = self.http.cookie_jar
+
+        # 引用新会话的请求打开器。
+        self.opener = self.http.opener
 
         # 清空当前登录令牌。
         self.token = ""

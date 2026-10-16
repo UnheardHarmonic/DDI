@@ -21,8 +21,6 @@ from datetime import datetime
 # 导入 HTML 解析器基类。
 from html.parser import HTMLParser
 
-# 导入 Cookie 容器。
-from http.cookiejar import CookieJar
 
 # 导入 URL 拼接函数。
 from urllib.parse import urlencode
@@ -33,17 +31,15 @@ from urllib.parse import urljoin
 # 导入 HTTP 错误类型。
 from urllib.error import HTTPError
 
-# 导入 Cookie 处理器。
-from urllib.request import HTTPCookieProcessor
 
 # 导入 URL 请求对象。
 from urllib.request import Request
 
-# 导入 URL 打开器构建函数。
-from urllib.request import build_opener
 
 # 导入 Excel 统一样式函数。
 from ddi_framework import apply_standard_excel_style
+# 导入协议请求客户端。
+from ddi_framework import ProtocolHttpClient
 
 # 导入平台适配器基类。
 from ddi_framework import BasePlatform
@@ -333,11 +329,14 @@ class CqxhyfPlatform(BasePlatform):
         # 保存最大分页页数。
         self.max_pages = int(account.get("最大分页页数", 500))
 
-        # 初始化 Cookie 容器。
-        self.cookie_jar = CookieJar()
+        # 初始化协议请求客户端并托管平台会话。
+        self.http = ProtocolHttpClient(self.base_url)
 
-        # 初始化协议请求打开器。
-        self.opener = build_opener(HTTPCookieProcessor(self.cookie_jar))
+        # 引用协议客户端管理的 Cookie 容器。
+        self.cookie_jar = self.http.cookie_jar
+
+        # 引用协议客户端管理的请求打开器。
+        self.opener = self.http.opener
 
         # 初始化登录状态。
         self.logged_in = False
