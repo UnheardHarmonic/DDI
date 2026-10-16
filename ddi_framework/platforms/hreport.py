@@ -1381,7 +1381,7 @@ class HreportPlatform(BasePlatform):
         """
 
         # 判断数据类型是否已接入。
-        if data_type not in ["配送流向", "购进流向", "库存", "纯销流向"]:
+        if data_type not in ["配送流向", "购进流向", "库存", "纯销流向", "连锁库存", "门店库存"]:
 
             # 抛出数据类型未接入异常。
             raise NotImplementedError(f"当前HReport暂未接入: {data_type}")
