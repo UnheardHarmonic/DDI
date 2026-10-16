@@ -7,7 +7,6 @@
 """
 
 # 导入哈希摘要模块。
-import hashlib
 
 # 导入 JSON 编解码模块。
 import json
@@ -34,6 +33,9 @@ from urllib.request import Request
 from urllib.request import build_opener
 
 # 导入 Excel 统一样式函数。
+# 导入通用摘要函数。
+from ddi_framework.reverse_utils import md5_hex
+
 from ddi_framework import apply_standard_excel_style
 
 # 导入平台适配器基类。
@@ -515,7 +517,7 @@ class CqpjyyPlatform(BasePlatform):
         """
 
         # 计算前端 js-md5 一致的密码摘要。
-        password_digest = hashlib.md5(str(self.password).encode("utf-8")).hexdigest()
+        password_digest = md5_hex(self.password)
 
         # 返回登录请求体。
         return {"account": self.username, "pwd": password_digest, "systemType": self.system_type, "loginType": "ACCOUNT"}

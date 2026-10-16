@@ -36,21 +36,20 @@ from urllib.parse import quote
 from urllib.parse import urlencode
 
 # 导入 PKCS7 填充器。
-from cryptography.hazmat.primitives import padding
 
 # 导入 AES 分组密码对象。
-from cryptography.hazmat.primitives.ciphers import Cipher
 
 # 导入 AES 算法配置。
-from cryptography.hazmat.primitives.ciphers import algorithms
 
 # 导入 ECB 分组模式配置。
-from cryptography.hazmat.primitives.ciphers import modes
 
 # 导入 Excel 工作簿类。
 from openpyxl import Workbook
 
 # 导入平台适配器基类。
+# 导入通用 AES-ECB 加密函数。
+from ddi_framework.reverse_utils import aes_ecb_pkcs7_base64
+
 from ddi_framework import BasePlatform
 
 # 导入 Excel 统一样式函数。
@@ -908,20 +907,8 @@ class HuaxinPlatform(BasePlatform):
         :rtype: str
         """
 
-        # 创建 AES 块大小的 PKCS7 填充器。
-        padder = padding.PKCS7(algorithms.AES.block_size).padder()
-
-        # 填充 UTF-8 明文字节。
-        padded_bytes = padder.update(str(plain_text).encode("utf-8")) + padder.finalize()
-
-        # 创建 AES-ECB 加密器。
-        encryptor = Cipher(algorithms.AES(str(secret_key).encode("utf-8")), modes.ECB()).encryptor()
-
-        # 生成 AES 密文字节。
-        cipher_bytes = encryptor.update(padded_bytes) + encryptor.finalize()
-
-        # 返回 Base64 编码密文。
-        return base64.b64encode(cipher_bytes).decode("ascii")
+        # 调用通用 AES-ECB-PKCS7 加密能力。
+        return aes_ecb_pkcs7_base64(plain_text, secret_key)
 
 
     # 定义数据类型校验方法。

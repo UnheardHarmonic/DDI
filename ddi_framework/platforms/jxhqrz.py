@@ -6,7 +6,6 @@
 """
 
 # 导入哈希摘要模块。
-import hashlib
 
 # 导入 JSON 编解码模块。
 import json
@@ -30,6 +29,9 @@ from urllib.parse import urlencode
 from urllib.parse import urlparse
 
 # 导入协议请求客户端。
+# 导入通用摘要函数。
+from ddi_framework.reverse_utils import md5_hex
+
 from ddi_framework import ProtocolHttpClient
 
 # 导入平台基类。
@@ -277,7 +279,7 @@ class JxhqrzPlatform(BasePlatform):
         password_text = self.clean_login_password()
 
         # 返回密码 MD5 摘要。
-        return hashlib.md5(password_text.encode("utf-8")).hexdigest()
+        return md5_hex(password_text)
 
 
 
@@ -891,82 +893,5 @@ class JxhqrzPlatform(BasePlatform):
 
 
 
-    # 定义通用 Excel 写入方法。
-    def write_rows_to_excel(self, rows, headers, output_path, sheet_name):
-
-        """
-        写入查询结果到 Excel。
-
-        :param rows: 查询结果数据行。
-        :type rows: list[dict]
-        :param headers: 表头配置。
-        :type headers: list[tuple[str, str]]
-        :param output_path: 输出文件路径。
-        :type output_path: str
-        :param sheet_name: 工作表名称。
-        :type sheet_name: str
-        :return: None。
-        :rtype: None
-        """
-
-        # 导入 Excel 工作簿对象。
-        from openpyxl import Workbook
-
-        # 导入列宽工具函数。
-        from openpyxl.utils import get_column_letter
-
-        # 创建 Excel 工作簿。
-        workbook = Workbook(write_only=False)
-
-        # 读取默认工作表。
-        worksheet = workbook.active
-
-        # 设置工作表名称。
-        worksheet.title = sheet_name[:31]
-
-        # 写入表头行。
-        worksheet.append([header_name for header_name, _ in headers])
-
-        # 遍历查询结果并写入数据行。
-        for row in rows:
-
-            # 按表头顺序组装一行数据。
-            worksheet.append([row.get(field_name, "") if isinstance(row, dict) else "" for _, field_name in headers])
-
-        # 遍历所有导出列设置列宽。
-        for column_index, header_item in enumerate(headers, start=1):
-
-            # 读取当前列字母。
-            column_letter = get_column_letter(column_index)
-
-            # 读取当前表头名称。
-            header_name = header_item[0]
-
-            # 设置当前列宽。
-            worksheet.column_dimensions[column_letter].width = max(12, min(34, len(str(header_name)) + 10))
-
-        # 冻结表头行。
-        worksheet.freeze_panes = "A2"
-
-        # 启用自动筛选。
-        worksheet.auto_filter.ref = worksheet.dimensions
-
-        # 创建输出目录。
-        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-
-        # 删除已有同名文件。
-        self.remove_existing_file(output_path)
-
-        # 捕获文件保存异常。
-        try:
-
-            # 保存 Excel 文件。
-            workbook.save(output_path)
-
-        # 处理文件被占用导致的保存异常。
-        except PermissionError as error:
-
-            # 抛出带业务路径的文件占用异常。
-            raise PermissionError(f"无法覆盖文件，请先关闭已打开的 Excel 文件：{output_path}") from error
 
 

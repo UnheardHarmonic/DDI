@@ -9,7 +9,6 @@
 import base64
 
 # 导入哈希摘要模块。
-import hashlib
 
 # 导入 JSON 编解码模块。
 import json
@@ -60,6 +59,9 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
 # 导入 Excel 统一样式函数。
+# 导入通用摘要函数。
+from ddi_framework.reverse_utils import md5_hex
+
 from ddi_framework import apply_standard_excel_style
 
 # 导入平台适配器基类。
@@ -1207,7 +1209,7 @@ class HxyxtPlatform(BasePlatform):
         base_text = f"{fingerprint_value}#{timestamp_text}"
 
         # 计算校验位。
-        checksum_text = hashlib.md5(base_text.encode("utf-8")).hexdigest()[-8:]
+        checksum_text = md5_hex(base_text)[-8:]
 
         # 返回 FineReport 客户端标识。
         return f"{base_text}#{checksum_text}"

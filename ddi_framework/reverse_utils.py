@@ -176,3 +176,98 @@ def triple_des_cbc_pkcs7_base64(plain_text, secret_key, iv_text, encoding="utf-8
 
     # 返回 Base64 编码密文。
     return base64.b64encode(cipher_bytes).decode("ascii")
+
+
+# 定义 AES-ECB-PKCS7-Base64 加密函数。
+def aes_ecb_pkcs7_base64(plain_text, secret_key, encoding="utf-8"):
+
+    """
+    使用 AES-ECB-PKCS7 加密文本并返回 Base64 密文。
+
+    :param plain_text: 明文字段。
+    :type plain_text: str
+    :param secret_key: AES 密钥文本。
+    :type secret_key: str
+    :param encoding: 文本编码。
+    :type encoding: str
+    :return: Base64 密文。
+    :rtype: str
+    """
+
+    # 导入对称加密器。
+    from cryptography.hazmat.primitives.ciphers import Cipher
+
+    # 导入对称加密算法。
+    from cryptography.hazmat.primitives.ciphers import algorithms
+
+    # 导入分组加密模式。
+    from cryptography.hazmat.primitives.ciphers import modes
+
+    # 导入填充器。
+    from cryptography.hazmat.primitives import padding
+
+    # 创建 PKCS7 填充器。
+    padder = padding.PKCS7(algorithms.AES.block_size).padder()
+
+    # 填充明文字节。
+    padded_bytes = padder.update(str(plain_text).encode(encoding)) + padder.finalize()
+
+    # 创建 AES-ECB 加密器。
+    encryptor = Cipher(algorithms.AES(str(secret_key).encode(encoding)), modes.ECB()).encryptor()
+
+    # 生成密文字节。
+    cipher_bytes = encryptor.update(padded_bytes) + encryptor.finalize()
+
+    # 返回 Base64 密文。
+    return base64.b64encode(cipher_bytes).decode("ascii")
+
+
+# 定义 AnsiX923 填充函数。
+def ansix923_pad(data_bytes, block_size=8):
+
+    """
+    按 AnsiX923 规则填充字节并在末位标记长度。
+
+    :param data_bytes: 原始字节。
+    :type data_bytes: bytes
+    :param block_size: 分组字节数。
+    :type block_size: int
+    :return: 填充后的字节。
+    :rtype: bytes
+    """
+
+    # 计算补齐长度。
+    padding_length = block_size - len(data_bytes) % block_size
+
+    # 返回补零加长度标记的填充结果。
+    return data_bytes + (b"\x00" * (padding_length - 1)) + bytes([padding_length])
+
+
+# 定义 3DES-ECB 加密函数。
+def triple_des_ecb_encrypt(data_bytes, key_bytes):
+
+    """
+    使用 3DES-ECB 加密已填充字节。
+
+    :param data_bytes: 已填充的明文字节。
+    :type data_bytes: bytes
+    :param key_bytes: 三重 DES 密钥字节。
+    :type key_bytes: bytes
+    :return: 密文字节。
+    :rtype: bytes
+    """
+
+    # 导入对称加密器。
+    from cryptography.hazmat.primitives.ciphers import Cipher
+
+    # 导入对称加密算法。
+    from cryptography.hazmat.primitives.ciphers import algorithms
+
+    # 导入分组加密模式。
+    from cryptography.hazmat.primitives.ciphers import modes
+
+    # 创建 ECB 加密器。
+    encryptor = Cipher(algorithms.TripleDES(key_bytes), modes.ECB()).encryptor()
+
+    # 返回密文字节。
+    return encryptor.update(data_bytes) + encryptor.finalize()

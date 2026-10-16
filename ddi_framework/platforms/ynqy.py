@@ -24,18 +24,18 @@ import os
 import time
 
 # 导入三重 DES 兼容算法。
-from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
 
 # 导入密码算法后端。
-from cryptography.hazmat.backends import default_backend
 
 # 导入分组密码构造器。
-from cryptography.hazmat.primitives.ciphers import Cipher
 
 # 导入 ECB 分组模式。
-from cryptography.hazmat.primitives.ciphers import modes
 
 # 导入 Excel 统一样式函数。
+# 导入通用填充与三重 DES 加密函数。
+from ddi_framework.reverse_utils import ansix923_pad
+from ddi_framework.reverse_utils import triple_des_ecb_encrypt
+
 from ddi_framework import apply_standard_excel_style
 
 # 导入协议 HTTP 客户端。
@@ -867,20 +867,11 @@ class YnqyPlatform(BasePlatform):
         # 将明文密码编码为字节数据。
         password_bytes = str(password).encode("utf-8")
 
-        # 计算 AnsiX923 补齐长度。
-        padding_length = 8 - len(password_bytes) % 8
+        # 按 AnsiX923 规则补齐密码字节。
+        padded_password = ansix923_pad(password_bytes, 8)
 
-        # 构建 AnsiX923 补齐后的密码字节。
-        padded_password = password_bytes + (b"\x00" * (padding_length - 1)) + bytes([padding_length])
-
-        # 构建与单 DES 等价的三重 DES 密钥。
-        des_key = b"romensjm" * 3
-
-        # 构建 ECB 加密器。
-        cipher = Cipher(TripleDES(des_key), modes.ECB(), backend=default_backend())
-
-        # 执行密码字节加密。
-        encrypted_password = cipher.encryptor().update(padded_password)
+        # 构建与单 DES 等价的三重 DES 密钥并加密。
+        encrypted_password = triple_des_ecb_encrypt(padded_password, b"romensjm" * 3)
 
         # 返回小写十六进制密文。
         return encrypted_password.hex()

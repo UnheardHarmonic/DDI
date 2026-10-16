@@ -12,7 +12,6 @@
 import json
 
 # 导入 SHA-256 摘要算法。
-import hashlib
 
 # 导入操作系统路径模块。
 import os
@@ -30,6 +29,9 @@ from datetime import datetime
 from openpyxl import Workbook
 
 # 导入平台基类。
+# 导入通用摘要函数。
+from ddi_framework.reverse_utils import sha256_hex
+
 from ddi_framework import BasePlatform
 
 # 导入 Excel 标准样式函数。
@@ -389,7 +391,7 @@ class CoxScmPlatform(BasePlatform):
         signature_source = f"{password_text}{request_timestamp}{self.password_secret}"
 
         # 返回小写十六进制 SHA-256 密码签名。
-        return hashlib.sha256(signature_source.encode("utf-8")).hexdigest()
+        return sha256_hex(signature_source)
 
     # 定义动态报表定义读取方法。
     def resolve_report_definition(self, data_type):
