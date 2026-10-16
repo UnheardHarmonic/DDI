@@ -7,7 +7,7 @@ ApplicationWindow {
     id: window
     width: 1520
     height: 960
-    minimumWidth: 1180
+    minimumWidth: 1360
     minimumHeight: 720
     visible: true
     color: "#F7F7F0"
@@ -66,10 +66,8 @@ ApplicationWindow {
         id: statusStrip
         implicitWidth: 336
         implicitHeight: 44
-        radius: 3
-        color: ddiViewModel.task.running ? "#EAF4EE" : "#F4F3E9"
-        border.width: 1
-        border.color: Qt.rgba(window.running.r, window.running.g, window.running.b, ddiViewModel.task.running ? 0.58 : 0.28)
+        radius: 0
+        color: "transparent"
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: 12
@@ -302,7 +300,6 @@ ApplicationWindow {
             contentItem: RowLayout {
                 spacing: 8
                 Text { text: dataTypeDropdown.selectedValues.length === 0 ? "选择数据类型" : dataTypeDropdown.selectedValues.length + " 种数据类型"; color: textMain; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
-                Text { text: dataTypeDropdown.selectedValues.length === 0 ? "未选择" : dataTypeDropdown.selectedValues.slice(0, 2).join("、") + (dataTypeDropdown.selectedValues.length > 2 ? " …" : ""); color: textMuted; font.pixelSize: 10; Layout.preferredWidth: 112; elide: Text.ElideRight }
                 Text { text: popup.visible ? "⌃" : "⌄"; color: running; font.pixelSize: 17 }
             }
             background: Rectangle { radius: 3; color: popup.visible ? "#EAF0EA" : (trigger.hovered ? "#F1F4EE" : "#FAFAF4"); border.width: trigger.activeFocus || popup.visible ? 2 : 1; border.color: trigger.activeFocus || popup.visible ? running : border }
@@ -484,10 +481,9 @@ ApplicationWindow {
         anchors.fill: parent
         Item {
             anchors.fill: parent
-            anchors.margins: 12
             RowLayout {
                 anchors.fill: parent
-                spacing: 12
+                spacing: 0
                 Item {
                     Layout.fillHeight: true
                     Layout.preferredWidth: 218
@@ -511,6 +507,7 @@ ApplicationWindow {
                         anchors.margins: 18
                         spacing: 11
                         RowLayout {
+                            DragHandler { onActiveChanged: if (active) window.startSystemMove() }
                             Rectangle {
                                 width: 24
                                 height: 24
@@ -589,16 +586,14 @@ ApplicationWindow {
                         Item { Layout.fillHeight: true }
                         Item {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 70
-                            Rectangle {
-                                anchors.fill: parent
-                                color: "#122019"
-                                border.width: 1
-                                border.color: Qt.rgba(border.r, border.g, border.b, 0.58)
-                            }
+                            Layout.preferredHeight: 66
+                            Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top; height: 1; color: "#2C4438" }
                             ColumnLayout {
                                 anchors.fill: parent
-                                anchors.margins: 10
+                                anchors.topMargin: 11
+                                anchors.leftMargin: 4
+                                anchors.rightMargin: 4
+                                spacing: 7
                                 Text { text: "界面动效"; color: "#F2F6F1"; font.pixelSize: 11; font.bold: true }
                                 RowLayout {
                                     Layout.fillWidth: true
@@ -626,7 +621,7 @@ ApplicationWindow {
                         Item {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 58
-                            Rectangle { anchors.fill: parent; color: "#FFFFFF"; border.width: 1; border.color: window.border; radius: 10 }
+                            Rectangle { anchors.fill: parent; color: "#FFFFFF" }
                             Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 1; color: border }
                             DragHandler { onActiveChanged: if (active) window.startSystemMove() }
                             RowLayout {
@@ -666,7 +661,21 @@ ApplicationWindow {
                                 NetworkPage { }
                             }
                         }
-                        Text { Layout.leftMargin: workspaceInset; Layout.rightMargin: workspaceInset; text: ddiViewModel.notice; color: textMuted; font.pixelSize: 11; leftPadding: 4; elide: Text.ElideRight }
+                        Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 28
+                        Rectangle { anchors.fill: parent; color: "#F7F7F0" }
+                        Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top; height: 1; color: border }
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: workspaceInset + 4
+                            anchors.rightMargin: workspaceInset + 4
+                            spacing: 8
+                            Rectangle { width: 6; height: 6; radius: 3; color: ddiViewModel.task.running ? running : success }
+                            Text { text: ddiViewModel.notice; color: textMuted; font.pixelSize: 11; elide: Text.ElideRight; Layout.fillWidth: true }
+                            Text { text: "V14.0"; color: textDim; font.pixelSize: 10 }
+                        }
+                    }
                     }
                 }
             }
@@ -773,12 +782,13 @@ ApplicationWindow {
                         }
                         Rectangle { Layout.fillWidth: true; height: 1; color: border }
                         ScrollView {
+                            id: changelogScroll
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             clip: true
                             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                             Text {
-                                width: parent.width
+                                width: changelogScroll.availableWidth
                                 text: ddiViewModel.initialData.changelog || "当前版本暂无更新日志。"
                                 color: textMuted
                                 font.pixelSize: 12
@@ -832,11 +842,11 @@ ApplicationWindow {
                                 Text { text: ddiViewModel.initialData.platforms.length + " 平台"; color: running; font.pixelSize: 11; font.bold: true }
                             }
                     }
-                    LabeledCombo { Layout.preferredWidth: 136; label: "执行动作"; options: ["query_excel", "query", "export", "login"]; selectedValue: consolePage.action; onChosen: consolePage.action = value }
-                    LabeledCombo { Layout.preferredWidth: 200; label: "日期模式"; options: ["previous_month_full", "previous_month_to_today", "custom"]; selectedValue: consolePage.dateMode; onChosen: { consolePage.dateMode = value; if (value !== "custom") { let today = new Date(); let previousLast = new Date(today.getFullYear(), today.getMonth(), 0); let previousFirst = new Date(previousLast.getFullYear(), previousLast.getMonth(), 1); let formatDate = value => value.getFullYear() + "-" + String(value.getMonth() + 1).padStart(2, "0") + "-" + String(value.getDate()).padStart(2, "0"); consolePage.startDate = formatDate(previousFirst); consolePage.endDate = value === "previous_month_full" ? formatDate(previousLast) : formatDate(today) } } }
-                    ColumnLayout { Layout.preferredWidth: 208; spacing: 4; FieldCaption { text: "数据类型（多选）" } DataTypeDropdown { Layout.fillWidth: true; options: ddiViewModel.initialData.dataTypes.filter(value => value !== "全部"); selectedValues: consolePage.dataTypes; onChanged: consolePage.dataTypes = values } }
-                    ColumnLayout { Layout.preferredWidth: 110; spacing: 4; FieldCaption { text: "开始日期" } GlassField { text: consolePage.startDate; onEditingFinished: { consolePage.startDate = text; consolePage.dateMode = "custom" } } }
-                    ColumnLayout { Layout.preferredWidth: 110; spacing: 4; FieldCaption { text: "结束日期" } GlassField { text: consolePage.endDate; onEditingFinished: { consolePage.endDate = text; consolePage.dateMode = "custom" } } }
+                    LabeledCombo { Layout.preferredWidth: 128; label: "执行动作"; options: ["query_excel", "query", "export", "login"]; selectedValue: consolePage.action; onChosen: consolePage.action = value }
+                    LabeledCombo { Layout.preferredWidth: 176; label: "日期模式"; options: ["previous_month_full", "previous_month_to_today", "custom"]; selectedValue: consolePage.dateMode; onChosen: { consolePage.dateMode = value; if (value !== "custom") { let today = new Date(); let previousLast = new Date(today.getFullYear(), today.getMonth(), 0); let previousFirst = new Date(previousLast.getFullYear(), previousLast.getMonth(), 1); let formatDate = value => value.getFullYear() + "-" + String(value.getMonth() + 1).padStart(2, "0") + "-" + String(value.getDate()).padStart(2, "0"); consolePage.startDate = formatDate(previousFirst); consolePage.endDate = value === "previous_month_full" ? formatDate(previousLast) : formatDate(today) } } }
+                    ColumnLayout { Layout.preferredWidth: 196; spacing: 4; FieldCaption { text: "数据类型（多选）" } DataTypeDropdown { Layout.fillWidth: true; options: ddiViewModel.initialData.dataTypes.filter(value => value !== "全部"); selectedValues: consolePage.dataTypes; onChanged: consolePage.dataTypes = values } }
+                    ColumnLayout { Layout.preferredWidth: 104; spacing: 4; FieldCaption { text: "开始日期" } GlassField { text: consolePage.startDate; onEditingFinished: { consolePage.startDate = text; consolePage.dateMode = "custom" } } }
+                    ColumnLayout { Layout.preferredWidth: 104; spacing: 4; FieldCaption { text: "结束日期" } GlassField { text: consolePage.endDate; onEditingFinished: { consolePage.endDate = text; consolePage.dateMode = "custom" } } }
                     ColumnLayout { Layout.preferredWidth: 88; spacing: 4; FieldCaption { text: "并发数" } CompactStepper { value: consolePage.workers; from: 1; to: 12; onValueChanged: consolePage.workers = value } }
                     ColumnLayout { spacing: 4; FieldCaption { text: "复制用 Excel" } GlassToggle { checked: consolePage.copyExcel; onToggled: consolePage.copyExcel = checked } }
                     Item { Layout.fillWidth: true }
@@ -854,6 +864,7 @@ ApplicationWindow {
                     Text { text: "快捷方案"; color: textMain; font.pixelSize: 12; font.bold: true }
                     GlassField { id: presetName; Layout.preferredWidth: 155; placeholderText: "方案名称" }
                     GlassButton { text: "保存当前"; onClicked: ddiViewModel.savePreset(presetName.text, { action: consolePage.action, dataTypes: consolePage.dataTypes, dateMode: consolePage.dateMode, startDate: consolePage.startDate, endDate: consolePage.endDate, maxWorkers: consolePage.workers, copyExcel: consolePage.copyExcel }) }
+                    Item { Layout.fillWidth: true }
                     GlassCombo { id: presetPicker; Layout.preferredWidth: 240; model: ddiViewModel.presets; textRole: "name" }
                     GlassButton { text: "加载方案"; enabled: presetPicker.currentText.length > 0; onClicked: { let value = ddiViewModel.loadPreset(presetPicker.currentText); consolePage.action = value.action || consolePage.action; consolePage.dataTypes = value.dataTypes || consolePage.dataTypes; consolePage.dateMode = value.dateMode || consolePage.dateMode; consolePage.startDate = value.startDate || consolePage.startDate; consolePage.endDate = value.endDate || consolePage.endDate; consolePage.workers = value.maxWorkers || consolePage.workers; consolePage.copyExcel = value.copyExcel === undefined ? consolePage.copyExcel : value.copyExcel } }
                 }
@@ -1059,7 +1070,6 @@ ApplicationWindow {
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 2
-                        Text { text: "运行甘特图"; color: textMain; font.pixelSize: 18; font.bold: true }
                         Text { text: "每家商业一条主时间线 · 阶段事件仅更新最新状态与记录数"; color: textMuted; font.pixelSize: 11 }
                     }
                     Text { text: "● 成功"; color: success; font.pixelSize: 11 }
@@ -1070,7 +1080,7 @@ ApplicationWindow {
                         implicitWidth: 156
                         implicitHeight: 32
                         enabled: String(ddiViewModel.task.logPath || "").length > 0
-                        text: enabled ? "打开当前 logs.xlsx" : "日志生成中"
+                        text: enabled ? "打开当前 logs.xlsx" : "任务日志未生成"
                         onClicked: ddiViewModel.openTaskLog()
                         ToolTip.visible: hovered && !enabled
                         ToolTip.text: "任务完成后将生成并保存当前 logs.xlsx"
@@ -1122,6 +1132,13 @@ ApplicationWindow {
                     model: ganttPage.visible ? ganttPage.rows : []
                     spacing: 0
                     ScrollBar.vertical: ScrollBar { }
+                    Text {
+                        anchors.centerIn: parent
+                        visible: ganttPage.rows.length === 0
+                        text: "暂无运行记录 · 启动任务后此处展示各商业阶段时间线"
+                        color: textDim
+                        font.pixelSize: 12
+                    }
                     delegate: Item {
                         id: ganttRow
                         required property var modelData
@@ -1673,11 +1690,12 @@ ApplicationWindow {
             ColumnLayout {
                 anchors.fill: parent
                 anchors.topMargin: 4
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
                 spacing: 8
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 35
-                    Text { text: "任务网络"; color: textMain; font.pixelSize: 18; font.bold: true; Layout.preferredWidth: 92 }
                     Text { text: ddiViewModel.reducedMotion ? "静态模式" : (ddiViewModel.task.running ? "实时绽放中" : "总览已就绪"); color: ddiViewModel.task.running ? running : textMuted; font.pixelSize: 11; font.bold: true }
                     Item { Layout.fillWidth: true }
                     GlassButton { text: "−"; implicitWidth: 28; onClicked: network.setZoomAt(network.zoom / 1.22, viewport.width / 2, viewport.height / 2) }

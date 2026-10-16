@@ -242,7 +242,7 @@ class GuiResponsivenessTests(unittest.TestCase):
         self.assertIn('objectName: "consoleDividerHandle"', qml_source)
 
         # 断言甘特图提供当前 logs.xlsx 打开入口。
-        self.assertIn('text: enabled ? "打开当前 logs.xlsx" : "日志生成中"', qml_source)
+        self.assertIn('text: enabled ? "打开当前 logs.xlsx" : "任务日志未生成"', qml_source)
 
         # 断言未生成日志时提供明确的禁用原因提示。
         self.assertIn('ToolTip.text: "任务完成后将生成并保存当前 logs.xlsx"', qml_source)

@@ -763,7 +763,7 @@ class DdiGuiViewModel(QObject):
         self.task_state = {"running": False, "status": "就绪", "total": 0, "completed": 0, "success": 0, "failure": 0, "stopped": 0, "runningCount": 0, "pending": 0, "elapsed": "0秒", "logPath": ""}
 
         # 初始化用户提示文本。
-        self.notice_text = "原生毛玻璃工作台已就绪"
+        self.notice_text = "工作台已就绪"
 
         # 初始化日志视图刷新间隔。
         self.log_refresh_interval_seconds = 0.20
