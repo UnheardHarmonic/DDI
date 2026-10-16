@@ -10,7 +10,7 @@ ApplicationWindow {
     minimumWidth: 1180
     minimumHeight: 720
     visible: true
-    color: "transparent"
+    color: "#F7F7F0"
     flags: Qt.FramelessWindowHint | Qt.Window
     title: "DDI 逆向神力"
 
@@ -19,21 +19,21 @@ ApplicationWindow {
     property bool detailsOpen: false
     property var selectedNode: ({})
     property int workspaceInset: 16
-    property color ink: "#0b1711"
-    property color glass: "#8c183d2b"
-    property color glassStrong: "#a31c4b34"
-    property color glassCool: "#762d5a3c"
-    property color border: "#6b6f9d7c"
-    property color borderBright: "#9ab2d7ab"
-    property color textMain: "#eef5f3"
-    property color textMuted: "#bdccca"
-    property color textDim: "#83999b"
-    property color amber: "#e7b469"
-    property color amberBright: "#ffd38b"
-    property color success: "#72d9ad"
-    property color running: "#73d4dc"
-    property color failure: "#ff8b9e"
-    property color warning: "#f2ca72"
+    property color ink: "#FFFFFF"
+    property color glass: "#FFFFFFFF"
+    property color glassStrong: "#FFFFFFFF"
+    property color glassCool: "#F4F6EF"
+    property color border: "#E0DECF"
+    property color borderBright: "#C9C7B6"
+    property color textMain: "#243029"
+    property color textMuted: "#5F6B62"
+    property color textDim: "#98A097"
+    property color amber: "#2F7A5B"
+    property color amberBright: "#22684A"
+    property color success: "#2F7A5B"
+    property color running: "#3E7E9C"
+    property color failure: "#C25B4E"
+    property color warning: "#B98A2E"
 
     function statusColor(status) {
         if (status === "成功") return success
@@ -47,22 +47,18 @@ ApplicationWindow {
         id: panel
         property color tint: window.glass
         property bool framed: false
-        color: panel.framed ? panel.tint : "transparent"
-        radius: panel.framed ? 8 : 0
+        color: panel.framed ? "#FFFFFF" : "transparent"
+        radius: panel.framed ? 10 : 0
         clip: false
         border.width: panel.framed ? 1 : 0
-        border.color: Qt.rgba(window.border.r, window.border.g, window.border.b, 0.78)
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: panel.framed ? Qt.lighter(panel.tint, 1.12) : "transparent" }
-            GradientStop { position: 1.0; color: panel.framed ? Qt.darker(panel.tint, 1.08) : "transparent" }
-        }
+        border.color: window.border
         Rectangle {
             visible: !panel.framed
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             height: 1
-            color: Qt.rgba(window.border.r, window.border.g, window.border.b, 0.58)
+            color: Qt.rgba(window.border.r, window.border.g, window.border.b, 0.8)
         }
     }
 
@@ -71,7 +67,7 @@ ApplicationWindow {
         implicitWidth: 336
         implicitHeight: 44
         radius: 3
-        color: ddiViewModel.task.running ? "#4a183f42" : "#35162d32"
+        color: ddiViewModel.task.running ? "#EAF4EE" : "#F4F3E9"
         border.width: 1
         border.color: Qt.rgba(window.running.r, window.running.g, window.running.b, ddiViewModel.task.running ? 0.58 : 0.28)
         RowLayout {
@@ -98,7 +94,7 @@ ApplicationWindow {
             }
             Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; Layout.topMargin: 8; Layout.bottomMargin: 8; color: border }
             RowLayout {
-                spacing: 7
+                spacing: 13
                 Text { text: "成 " + ddiViewModel.task.success; color: success; font.pixelSize: 12; font.bold: true }
                 Text { text: "败 " + ddiViewModel.task.failure; color: failure; font.pixelSize: 12; font.bold: true }
                 Text { text: "运 " + ddiViewModel.task.runningCount; color: running; font.pixelSize: 12; font.bold: true }
@@ -123,7 +119,7 @@ ApplicationWindow {
         }
         background: Rectangle {
             radius: 3
-            color: button.down ? "#34474d" : (button.hovered ? "#26383e" : "transparent")
+            color: !button.enabled ? "#F1F0E4" : (button.down ? "#DDE7DF" : (button.hovered ? "#EAF0EA" : "transparent"))
             border.width: button.activeFocus ? 1 : 0
             border.color: running
         }
@@ -144,7 +140,7 @@ ApplicationWindow {
         }
         background: Rectangle {
             radius: 3
-            color: button.enabled ? (button.down ? "#c79550" : (button.hovered ? amberBright : amber)) : "#304147"
+            color: button.enabled ? (button.down ? "#276B4E" : (button.hovered ? "#3E9B74" : amber)) : "#E4E2D6"
             border.width: 1
             border.color: button.enabled ? amberBright : border
         }
@@ -166,7 +162,7 @@ ApplicationWindow {
         rightPadding: 11
         background: Rectangle {
             radius: 3
-            color: field.activeFocus ? "#1e3036" : "#162229"
+            color: field.activeFocus ? "#FFFFFF" : "#FAFAF4"
             border.width: field.activeFocus ? 2 : 1
             border.color: field.activeFocus ? running : border
         }
@@ -194,7 +190,7 @@ ApplicationWindow {
         }
         background: Rectangle {
             radius: 3
-            color: combo.pressed ? "#263a40" : (combo.hovered ? "#1d3036" : "#162229")
+            color: combo.pressed ? "#EAF0EA" : (combo.hovered ? "#F1F4EE" : "#FAFAF4")
             border.width: combo.activeFocus ? 2 : 1
             border.color: combo.activeFocus ? running : border
         }
@@ -223,7 +219,7 @@ ApplicationWindow {
                 radius: 4
                 border.width: 1
                 border.color: borderBright
-                color: "#1b282e"
+                color: "#FFFFFF"
             }
             contentItem: ListView {
                 clip: true
@@ -306,10 +302,10 @@ ApplicationWindow {
             contentItem: RowLayout {
                 spacing: 8
                 Text { text: dataTypeDropdown.selectedValues.length === 0 ? "选择数据类型" : dataTypeDropdown.selectedValues.length + " 种数据类型"; color: textMain; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
-                Text { text: dataTypeDropdown.selectedValues.length === 0 ? "未选择" : dataTypeDropdown.selectedValues.slice(0, 2).join("、") + (dataTypeDropdown.selectedValues.length > 2 ? " …" : ""); color: textMuted; font.pixelSize: 10; Layout.preferredWidth: 90; elide: Text.ElideRight }
+                Text { text: dataTypeDropdown.selectedValues.length === 0 ? "未选择" : dataTypeDropdown.selectedValues.slice(0, 2).join("、") + (dataTypeDropdown.selectedValues.length > 2 ? " …" : ""); color: textMuted; font.pixelSize: 10; Layout.preferredWidth: 112; elide: Text.ElideRight }
                 Text { text: popup.visible ? "⌃" : "⌄"; color: running; font.pixelSize: 17 }
             }
-            background: Rectangle { radius: 3; color: popup.visible ? "#263f3c" : (trigger.hovered ? "#203733" : "#162a28"); border.width: trigger.activeFocus || popup.visible ? 2 : 1; border.color: trigger.activeFocus || popup.visible ? running : border }
+            background: Rectangle { radius: 3; color: popup.visible ? "#EAF0EA" : (trigger.hovered ? "#F1F4EE" : "#FAFAF4"); border.width: trigger.activeFocus || popup.visible ? 2 : 1; border.color: trigger.activeFocus || popup.visible ? running : border }
             onClicked: popup.open()
             Popup {
                 id: popup
@@ -317,7 +313,7 @@ ApplicationWindow {
                 width: Math.max(300, dataTypeDropdown.width)
                 padding: 10
                 closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-                background: Rectangle { radius: 4; color: "#142c29"; border.width: 1; border.color: borderBright }
+                background: Rectangle { radius: 4; color: "#FFFFFF"; border.width: 1; border.color: borderBright }
                 contentItem: ColumnLayout {
                     spacing: 8
                     RowLayout {
@@ -369,8 +365,8 @@ ApplicationWindow {
             border.width: 1
             border.color: control.checked ? running : border
             gradient: Gradient {
-                GradientStop { position: 0.0; color: control.checked ? "#7a4d91b6" : "#55305269" }
-                GradientStop { position: 1.0; color: control.checked ? "#5b2d668b" : "#3c1d354d" }
+                GradientStop { position: 0.0; color: control.checked ? "#3E9B74" : "#D6D4C5" }
+                GradientStop { position: 1.0; color: control.checked ? "#2F7A5B" : "#E4E2D6" }
             }
             Rectangle {
                 width: 18
@@ -378,7 +374,7 @@ ApplicationWindow {
                 radius: 9
                 x: control.checked ? 21 : 3
                 y: 3
-                color: control.checked ? "#f3fbff" : "#9aa8b6"
+                color: control.checked ? "#FFFFFF" : "#FFFFFF"
                 Behavior on x { NumberAnimation { duration: 130 } }
             }
         }
@@ -399,8 +395,8 @@ ApplicationWindow {
             border.width: 1
             border.color: control.checked ? amberBright : border
             gradient: Gradient {
-                GradientStop { position: 0.0; color: control.checked ? amberBright : "#4c284562" }
-                GradientStop { position: 1.0; color: control.checked ? "#cb8641" : "#30172b40" }
+                GradientStop { position: 0.0; color: control.checked ? amberBright : "#D6D4C5" }
+                GradientStop { position: 1.0; color: control.checked ? "#276B4E" : "#E4E2D6" }
             }
             Text {
                 anchors.centerIn: parent
@@ -428,8 +424,8 @@ ApplicationWindow {
             border.width: 1
             border.color: border
             gradient: Gradient {
-                GradientStop { position: 0.0; color: "#56284764" }
-                GradientStop { position: 1.0; color: "#38172c43" }
+                GradientStop { position: 0.0; color: "#FAFAF4" }
+                GradientStop { position: 1.0; color: "#F1F4EE" }
             }
         }
         Button {
@@ -441,7 +437,7 @@ ApplicationWindow {
             enabled: stepper.value > stepper.from
             onClicked: stepper.decrease()
             contentItem: Text { text: parent.text; color: parent.enabled ? textMuted : textDim; font.pixelSize: 17; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
-            background: Rectangle { color: parent.down ? "#72426d92" : "transparent"; radius: 8 }
+            background: Rectangle { color: parent.down ? "#DDE7DF" : "transparent"; radius: 8 }
         }
         TextField {
             id: stepperInput
@@ -470,17 +466,17 @@ ApplicationWindow {
             enabled: stepper.value < stepper.to
             onClicked: stepper.increase()
             contentItem: Text { text: parent.text; color: parent.enabled ? textMuted : textDim; font.pixelSize: 17; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
-            background: Rectangle { color: parent.down ? "#72426d92" : "transparent"; radius: 8 }
+            background: Rectangle { color: parent.down ? "#DDE7DF" : "transparent"; radius: 8 }
         }
     }
 
     Rectangle {
         anchors.fill: parent
-        color: "#28101f16"
+        color: "#F7F7F0"
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#351d3b2a" }
-            GradientStop { position: 0.56; color: "#20112719" }
-            GradientStop { position: 1.0; color: "#32101f16" }
+            GradientStop { position: 0.0; color: "#F7F7F0" }
+            GradientStop { position: 0.56; color: "#F7F7F0" }
+            GradientStop { position: 1.0; color: "#F7F7F0" }
         }
     }
 
@@ -497,10 +493,10 @@ ApplicationWindow {
                     Layout.preferredWidth: 218
                     Rectangle {
                         anchors.fill: parent
-                        color: "#4a183827"
+                        color: "#16291F"
                         gradient: Gradient {
-                            GradientStop { position: 0.0; color: "#5a28513a" }
-                            GradientStop { position: 1.0; color: "#3411271b" }
+                            GradientStop { position: 0.0; color: "#16291F" }
+                            GradientStop { position: 1.0; color: "#16291F" }
                         }
                         Rectangle {
                             anchors.top: parent.top
@@ -519,15 +515,15 @@ ApplicationWindow {
                                 width: 24
                                 height: 24
                                 radius: 3
-                                color: "#1e353a"
+                                color: "#2F7A5B"
                                 border.width: 1
                                 border.color: running
-                                Text { anchors.centerIn: parent; text: "◇"; color: amberBright; font.pixelSize: 17 }
+                                Text { anchors.centerIn: parent; text: "◇"; color: "#FFFFFF"; font.pixelSize: 17 }
                             }
                             ColumnLayout {
                                 spacing: 0
-                                Text { text: "DDI 逆向神力"; color: textMain; font.pixelSize: 15; font.bold: true }
-                                Text { text: "V14.0 · PROTOCOL FIRST"; color: textDim; font.pixelSize: 11 }
+                                Text { text: "DDI 逆向神力"; color: "#F2F6F1"; font.pixelSize: 15; font.bold: true }
+                                Text { text: "V14.0 · PROTOCOL FIRST"; color: "#8FA394"; font.pixelSize: 11 }
                             }
                         }
                         Rectangle { Layout.fillWidth: true; height: 1; color: border }
@@ -559,14 +555,14 @@ ApplicationWindow {
                                         spacing: 11
                                         Text {
                                             text: navButton.modelData.icon
-                                            color: window.page === navButton.modelData.key ? amberBright : textMuted
+                                            color: window.page === navButton.modelData.key ? "#8FD1AE" : "#9DB2A5"
                                             font.pixelSize: 16
                                             Layout.preferredWidth: 18
                                             horizontalAlignment: Text.AlignHCenter
                                         }
                                         Text {
                                             text: navButton.modelData.title
-                                            color: window.page === navButton.modelData.key ? textMain : textMuted
+                                            color: window.page === navButton.modelData.key ? "#FFFFFF" : "#9DB2A5"
                                             font.pixelSize: 13
                                             font.weight: window.page === navButton.modelData.key ? Font.DemiBold : Font.Normal
                                             Layout.fillWidth: true
@@ -576,7 +572,7 @@ ApplicationWindow {
                                 }
                                 background: Rectangle {
                                     radius: 3
-                                    color: window.page === navButton.modelData.key ? "#2d526d73" : (navButton.hovered ? "#1d435d64" : "transparent")
+                                    color: window.page === navButton.modelData.key ? "#2F7A5B" : (navButton.hovered ? "#24382E" : "transparent")
                                     Rectangle {
                                         width: 3
                                         height: 18
@@ -596,17 +592,17 @@ ApplicationWindow {
                             Layout.preferredHeight: 70
                             Rectangle {
                                 anchors.fill: parent
-                                color: "#34224432"
+                                color: "#122019"
                                 border.width: 1
                                 border.color: Qt.rgba(border.r, border.g, border.b, 0.58)
                             }
                             ColumnLayout {
                                 anchors.fill: parent
                                 anchors.margins: 10
-                                Text { text: "界面动效"; color: textMain; font.pixelSize: 11; font.bold: true }
+                                Text { text: "界面动效"; color: "#F2F6F1"; font.pixelSize: 11; font.bold: true }
                                 RowLayout {
                                     Layout.fillWidth: true
-                                    Text { text: ddiViewModel.reducedMotion ? "低干扰模式" : "沉浸动效"; color: textMuted; font.pixelSize: 11; Layout.fillWidth: true }
+                                    Text { text: ddiViewModel.reducedMotion ? "低干扰模式" : "沉浸动效"; color: "#9DB2A5"; font.pixelSize: 11; Layout.fillWidth: true }
                                     GlassToggle { checked: ddiViewModel.reducedMotion; onToggled: ddiViewModel.setReducedMotion(checked) }
                                 }
                             }
@@ -618,10 +614,10 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     Rectangle {
                         anchors.fill: parent
-                        color: "#21162f23"
+                        color: "#00000000"
                         gradient: Gradient {
-                            GradientStop { position: 0.0; color: "#30204732" }
-                            GradientStop { position: 1.0; color: "#1610271b" }
+                            GradientStop { position: 0.0; color: "#00000000" }
+                            GradientStop { position: 1.0; color: "#00000000" }
                         }
                     }
                     ColumnLayout {
@@ -630,7 +626,7 @@ ApplicationWindow {
                         Item {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 58
-                            Rectangle { anchors.fill: parent; color: "#351a402c" }
+                            Rectangle { anchors.fill: parent; color: "#FFFFFF"; border.width: 1; border.color: window.border; radius: 10 }
                             Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 1; color: border }
                             DragHandler { onActiveChanged: if (active) window.startSystemMove() }
                             RowLayout {
@@ -655,10 +651,10 @@ ApplicationWindow {
                             Layout.fillHeight: true
                             Rectangle {
                                 anchors.fill: parent
-                                color: window.page === "network" ? "#10122d1e" : "#a808170f"
+                                color: "#FFFFFF"
                                 gradient: Gradient {
-                                    GradientStop { position: 0.0; color: window.page === "network" ? "#1a245039" : "#b8123020" }
-                                    GradientStop { position: 1.0; color: window.page === "network" ? "#0b102419" : "#9208170f" }
+                                    GradientStop { position: 0.0; color: "#FFFFFF" }
+                                    GradientStop { position: 1.0; color: "#FFFFFF" }
                                 }
                             }
                             StackLayout {
@@ -772,7 +768,7 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 spacing: 2
                                 Text { text: "本版更新"; color: textMain; font.pixelSize: 16; font.bold: true }
-                                Text { text: "DDI V14.0 · Qt Quick 深色冰晶工作台"; color: textMuted; font.pixelSize: 11 }
+                                Text { text: "DDI V14.0 · Qt Quick 纸感工作台"; color: textMuted; font.pixelSize: 11 }
                             }
                         }
                         Rectangle { Layout.fillWidth: true; height: 1; color: border }
@@ -825,13 +821,19 @@ ApplicationWindow {
                     anchors.margins: 12
                     spacing: 9
                     ColumnLayout {
-                        Layout.preferredWidth: 116
+                        Layout.preferredWidth: 176
                         spacing: 2
                         Text { text: "任务参数"; color: textMain; font.pixelSize: 15; font.bold: true }
                             Text { text: "公共层统一执行"; color: textDim; font.pixelSize: 11 }
+                            RowLayout {
+                                spacing: 8
+                                Text { text: ddiViewModel.initialData.companyCount + " 商业"; color: amberBright; font.pixelSize: 11; font.bold: true }
+                                Text { text: ddiViewModel.initialData.enabledCount + " 启用"; color: success; font.pixelSize: 11; font.bold: true }
+                                Text { text: ddiViewModel.initialData.platforms.length + " 平台"; color: running; font.pixelSize: 11; font.bold: true }
+                            }
                     }
-                    LabeledCombo { Layout.preferredWidth: 112; label: "执行动作"; options: ["query_excel", "query", "export", "login"]; selectedValue: consolePage.action; onChosen: consolePage.action = value }
-                    LabeledCombo { Layout.preferredWidth: 154; label: "日期模式"; options: ["previous_month_full", "previous_month_to_today", "custom"]; selectedValue: consolePage.dateMode; onChosen: { consolePage.dateMode = value; if (value !== "custom") { let today = new Date(); let previousLast = new Date(today.getFullYear(), today.getMonth(), 0); let previousFirst = new Date(previousLast.getFullYear(), previousLast.getMonth(), 1); let formatDate = value => value.getFullYear() + "-" + String(value.getMonth() + 1).padStart(2, "0") + "-" + String(value.getDate()).padStart(2, "0"); consolePage.startDate = formatDate(previousFirst); consolePage.endDate = value === "previous_month_full" ? formatDate(previousLast) : formatDate(today) } } }
+                    LabeledCombo { Layout.preferredWidth: 136; label: "执行动作"; options: ["query_excel", "query", "export", "login"]; selectedValue: consolePage.action; onChosen: consolePage.action = value }
+                    LabeledCombo { Layout.preferredWidth: 200; label: "日期模式"; options: ["previous_month_full", "previous_month_to_today", "custom"]; selectedValue: consolePage.dateMode; onChosen: { consolePage.dateMode = value; if (value !== "custom") { let today = new Date(); let previousLast = new Date(today.getFullYear(), today.getMonth(), 0); let previousFirst = new Date(previousLast.getFullYear(), previousLast.getMonth(), 1); let formatDate = value => value.getFullYear() + "-" + String(value.getMonth() + 1).padStart(2, "0") + "-" + String(value.getDate()).padStart(2, "0"); consolePage.startDate = formatDate(previousFirst); consolePage.endDate = value === "previous_month_full" ? formatDate(previousLast) : formatDate(today) } } }
                     ColumnLayout { Layout.preferredWidth: 208; spacing: 4; FieldCaption { text: "数据类型（多选）" } DataTypeDropdown { Layout.fillWidth: true; options: ddiViewModel.initialData.dataTypes.filter(value => value !== "全部"); selectedValues: consolePage.dataTypes; onChanged: consolePage.dataTypes = values } }
                     ColumnLayout { Layout.preferredWidth: 110; spacing: 4; FieldCaption { text: "开始日期" } GlassField { text: consolePage.startDate; onEditingFinished: { consolePage.startDate = text; consolePage.dateMode = "custom" } } }
                     ColumnLayout { Layout.preferredWidth: 110; spacing: 4; FieldCaption { text: "结束日期" } GlassField { text: consolePage.endDate; onEditingFinished: { consolePage.endDate = text; consolePage.dateMode = "custom" } } }
@@ -935,7 +937,7 @@ ApplicationWindow {
                                 anchors.margins: 8
                                 spacing: 8
                                 GlassCheck { checked: modelData.selected; onToggled: ddiViewModel.toggleCompany(modelData.name) }
-                                ColumnLayout { Layout.fillWidth: true; spacing: 2; Text { text: modelData.name; color: textMain; font.pixelSize: 13; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true } Text { text: modelData.platform + " · " + modelData.owner + " · " + modelData.region + " / " + modelData.province; color: textMuted; font.pixelSize: 11; elide: Text.ElideRight; Layout.fillWidth: true } }
+                                ColumnLayout { Layout.fillWidth: true; spacing: 2; Text { text: modelData.name; color: textMain; font.pixelSize: 13; font.bold: true; elide: Text.ElideRight; Layout.fillWidth: true } Text { text: [modelData.platform, modelData.owner, modelData.region + " / " + modelData.province].filter(part => String(part || "").replace(" / ", "").trim().length > 0).join(" · "); color: textMuted; font.pixelSize: 11; elide: Text.ElideRight; Layout.fillWidth: true } }
                                 Text { text: modelData.enabled ? "已启用" : "已停用"; color: modelData.enabled ? success : textDim; font.pixelSize: 11; font.bold: true }
                                 GlassToggle { checked: modelData.enabled; onToggled: ddiViewModel.setCompanyEnabled(modelData.name, checked) }
                                 GlassButton { text: "网络"; implicitWidth: 52; onClicked: { ddiViewModel.focusNetworkNode("company:" + modelData.name); window.page = "network" } }
@@ -1083,7 +1085,7 @@ ApplicationWindow {
                         }
                         background: Rectangle {
                             radius: 3
-                            color: ganttTaskLogButton.enabled ? (ganttTaskLogButton.down ? "#c79550" : (ganttTaskLogButton.hovered ? amberBright : amber)) : "#243d4148"
+                            color: ganttTaskLogButton.enabled ? (ganttTaskLogButton.down ? "#276B4E" : (ganttTaskLogButton.hovered ? amberBright : amber)) : "#E4E2D6"
                             border.width: 1
                             border.color: ganttTaskLogButton.enabled ? amberBright : Qt.rgba(border.r, border.g, border.b, 0.72)
                         }
@@ -1165,7 +1167,7 @@ ApplicationWindow {
                                     radius: 3
                                     color: statusColor(ganttTrack.rowData.status)
                                     opacity: ganttTrack.rowData.status === "运行中" ? 0.86 : 0.72
-                                    Rectangle { anchors.fill: parent; anchors.margins: 2; radius: 2; color: "#7fffffff"; opacity: 0.34 }
+                                    Rectangle { anchors.fill: parent; anchors.margins: 2; radius: 2; color: "#66FFFFFF"; opacity: 0.34 }
                                 }
                                 Text {
                                     visible: Number(ganttTrack.rowData.timelineOffset === undefined ? -1 : ganttTrack.rowData.timelineOffset) >= 0
@@ -1218,11 +1220,11 @@ ApplicationWindow {
         function easeOut(value) { let inverse = 1 - clamp(value, 0, 1); return 1 - inverse * inverse * inverse }
 
         function nodeTone(status) {
-            if (status === "成功") return "#72d9ad"
-            if (status === "运行中") return "#73d4dc"
-            if (status === "失败" || status === "错误") return "#ff8b9e"
-            if (status === "停止") return "#83999b"
-            return "#e7b469"
+            if (status === "成功") return "#2F7A5B"
+            if (status === "运行中") return "#3E7E9C"
+            if (status === "失败" || status === "错误") return "#C25B4E"
+            if (status === "停止") return "#98A097"
+            return "#B98A2E"
         }
 
         function rebuildNodeIndex() {
@@ -1439,7 +1441,7 @@ ApplicationWindow {
         function drawLayerGuides(context) {
             let center = Qt.point(viewport.width / 2 + pan.x, viewport.height / 2 + pan.y)
             let ringRadii = [radialRadius(1, levelCounts[1]), radialRadius(2, levelCounts[2]), radialRadius(3, levelCounts[3])]
-            context.strokeStyle = "#62af9d"
+            context.strokeStyle = "#C3D4C6"
             context.lineWidth = 1
             context.globalAlpha = 0.18
             for (let index = 0; index < ringRadii.length; index++) {
@@ -1449,7 +1451,7 @@ ApplicationWindow {
             }
             context.font = "600 11px sans-serif"
             context.textAlign = "center"
-            context.fillStyle = "#b9cbbf"
+            context.fillStyle = "#8A9389"
             context.globalAlpha = 0.76
             context.fillText("调度核心", center.x, center.y - 58 * zoom)
         }
@@ -1458,7 +1460,7 @@ ApplicationWindow {
             let spacing = Math.max(54, 180 * zoom)
             let offsetX = ((pan.x % spacing) + spacing) % spacing
             let offsetY = ((pan.y % spacing) + spacing) % spacing
-            context.strokeStyle = "#2f75665c"
+            context.strokeStyle = "#121B3D2F"
             context.lineWidth = 1
             context.globalAlpha = 0.17
             for (let x = offsetX; x < viewport.width; x += spacing) {
@@ -1501,7 +1503,7 @@ ApplicationWindow {
             context.beginPath()
             context.arc(point.x, point.y, radius * (0.82 + 0.18 * progress), 0, Math.PI * 2)
             context.fill()
-            context.fillStyle = "#fff8e8"
+            context.fillStyle = "#FFFFFF"
             context.globalAlpha = 0.88 * progress
             context.beginPath()
             context.arc(point.x - radius * 0.22, point.y - radius * 0.22, Math.max(1.5, radius * 0.23), 0, Math.PI * 2)
@@ -1691,12 +1693,12 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     radius: 0
                     clip: true
-                    color: "#172f2a38"
+                    color: "#F4F6EE"
                     border.width: 0
                     gradient: Gradient {
-                        GradientStop { position: 0.0; color: "#28473c4d" }
-                        GradientStop { position: 0.52; color: "#173a3140" }
-                        GradientStop { position: 1.0; color: "#0d282431" }
+                        GradientStop { position: 0.0; color: "#F7F9F2" }
+                        GradientStop { position: 0.52; color: "#F1F4E9" }
+                        GradientStop { position: 1.0; color: "#E9EDDE" }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -1769,7 +1771,7 @@ ApplicationWindow {
                                 anchors.fill: parent
                                 visible: parent.aggregateNode
                                 radius: 2
-                                color: "#5b432b66"
+                                color: "#8CFFFFFF"
                                 border.width: 1
                                 border.color: Qt.rgba(statusColor(modelData.status).r, statusColor(modelData.status).g, statusColor(modelData.status).b, 0.40)
                             }

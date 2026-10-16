@@ -206,8 +206,8 @@ class PresentationIsolationTests(unittest.TestCase):
         # 断言原生 Acrylic 使用低饱和绿色遮罩色保留后侧可见性。
         self.assertIn("0x2A224A1A", effect_source)
 
-        # 断言文字密集页面使用独立的半透明对比度底层。
-        self.assertIn('window.page === "network"', qml_source)
+        # 断言导航激活项使用深墨绿主色填充。
+        self.assertIn('color: window.page === navButton.modelData.key ? "#2F7A5B"', qml_source)
 
     # 定义 QML 网络能力测试方法。
     def test_qml_declares_global_glass_and_reduced_motion_network(self):

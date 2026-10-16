@@ -247,8 +247,8 @@ class GuiResponsivenessTests(unittest.TestCase):
         # 断言未生成日志时提供明确的禁用原因提示。
         self.assertIn('ToolTip.text: "任务完成后将生成并保存当前 logs.xlsx"', qml_source)
 
-        # 断言任务网络使用主体绿色玻璃色系。
-        self.assertIn('return "#72d9ad"', qml_source)
+        # 断言任务网络使用深墨绿成功色系。
+        self.assertIn('return "#2F7A5B"', qml_source)
 
     # 定义增量日志容量测试方法。
     def test_incremental_log_model_keeps_latest_rows(self):
