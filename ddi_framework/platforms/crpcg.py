@@ -23,14 +23,8 @@ import os
 # 导入 SSL 上下文模块。
 import ssl
 
-# 导入 Cookie 处理器。
-from urllib.request import HTTPCookieProcessor
 
-# 导入 HTTPS 请求处理器。
-from urllib.request import HTTPSHandler
 
-# 导入请求客户端构造函数。
-from urllib.request import build_opener
 
 # 导入 Excel 工作簿对象。
 from openpyxl import Workbook
@@ -140,17 +134,14 @@ class CrpcgPlatform(BasePlatform):
         # 读取稳定的单页查询数量。
         self.page_size = max(1, int(account.get("分页大小", 1000)))
 
-        # 初始化带 Cookie 管理的协议客户端。
-        self.http = ProtocolHttpClient(self.base_url)
-
         # 创建默认 TLS 校验上下文。
         ssl_context = ssl.create_default_context()
 
         # 启用目标旧服务器必需的 TLS 重新协商兼容选项（低版本运行时缺失该选项时跳过）。
         ssl_context.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0)
 
-        # 使用受限兼容上下文替换当前平台会话的 HTTPS 处理器。
-        self.http.opener = build_opener(HTTPCookieProcessor(self.http.cookie_jar), HTTPSHandler(context=ssl_context))
+        # 初始化带 Cookie 管理与旧服务器兼容上下文的协议客户端。
+        self.http = ProtocolHttpClient(self.base_url, ssl_context=ssl_context)
 
         # 初始化登录令牌。
         self.token = ""

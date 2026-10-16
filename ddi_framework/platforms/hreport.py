@@ -14,20 +14,12 @@ from datetime import datetime
 # 导入表单编码函数。
 from urllib.parse import urlencode
 
-# 导入 HTTP 重定向处理器。
-from urllib.request import HTTPRedirectHandler
 
-# 导入 Cookie 处理器。
-from urllib.request import HTTPCookieProcessor
 
 # 导入请求构造对象。
 from urllib.request import Request
 
-# 导入 opener 构建函数。
-from urllib.request import build_opener
 
-# 导入 HTTP 异常对象。
-from urllib.error import HTTPError
 
 # 导入协议请求客户端。
 from ddi_framework import HttpResult
@@ -46,39 +38,6 @@ from ddi_framework import md5_hex
 
 
 # 定义禁止自动重定向处理器。
-class NoRedirectHandler(HTTPRedirectHandler):
-
-    """
-    禁止 urllib 自动跟随 HTTP 重定向。
-
-    :return: 禁止重定向处理器实例。
-    :rtype: NoRedirectHandler
-    """
-
-    # 定义重定向请求处理方法。
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-
-        """
-        返回空重定向请求以保留原始 302 响应。
-
-        :param req: 原始请求对象。
-        :type req: Request
-        :param fp: 响应文件对象。
-        :type fp: http.client.HTTPResponse
-        :param code: HTTP 状态码。
-        :type code: int
-        :param msg: HTTP 状态消息。
-        :type msg: str
-        :param headers: 响应头集合。
-        :type headers: email.message.Message
-        :param newurl: 重定向目标地址。
-        :type newurl: str
-        :return: 空重定向请求。
-        :rtype: None
-        """
-
-        # 返回空值阻止自动重定向。
-        return None
 
 
 # 定义HReport 供应商查询系统协议适配器。
@@ -269,32 +228,8 @@ class HreportPlatform(BasePlatform):
         # 编码表单请求体。
         data = urlencode(payload).encode("utf-8")
 
-        # 构建标准库请求对象。
-        request = Request(url=self.login_api_url, data=data, headers=headers, method="POST")
-
-        # 构建禁止自动重定向的请求 opener。
-        opener = build_opener(HTTPCookieProcessor(self.http.cookie_jar), NoRedirectHandler())
-
-        # 捕获 302 重定向响应。
-        try:
-
-            # 发送登录请求并读取响应。
-            with opener.open(request, timeout=30) as response:
-
-                # 读取响应体。
-                body = response.read()
-
-                # 返回原始响应结果。
-                return HttpResult(response.status, dict(response.headers.items()), body)
-
-        # 处理被禁止跟随后的 HTTPError。
-        except HTTPError as error:
-
-            # 读取错误响应体。
-            body = error.read()
-
-            # 返回原始 HTTP 响应结果。
-            return HttpResult(error.code, dict(error.headers.items()), body)
+        # 以禁止跟随重定向方式提交登录并保留原始响应。
+        return self.http.request("POST", self.login_api_url, headers, data=data, timeout=30, allow_http_error=True, follow_redirects=False)
 
     # 定义登录请求头构建方法。
     def build_login_headers(self):

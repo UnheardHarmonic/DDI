@@ -23,8 +23,50 @@ from urllib.error import HTTPError, URLError
 # 导入表单编码函数。
 from urllib.parse import urlencode
 
+# 导入 HTTP 重定向处理器。
+from urllib.request import HTTPRedirectHandler
+
+# 导入 HTTPS 处理器。
+from urllib.request import HTTPSHandler
+
 # 导入标准库请求对象。
 from urllib.request import HTTPCookieProcessor, Request, build_opener
+
+
+# 定义禁止自动重定向处理器。
+class NoRedirectHandler(HTTPRedirectHandler):
+
+    """
+    禁止 urllib 自动跟随 HTTP 重定向。
+
+    :return: 禁止重定向处理器实例。
+    :rtype: NoRedirectHandler
+    """
+
+    # 定义重定向请求处理方法。
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+
+        """
+        拒绝自动跟随重定向并保留原始响应。
+
+        :param req: 当前请求对象。
+        :type req: Request
+        :param fp: 原始响应体。
+        :type fp: object
+        :param code: 重定向状态码。
+        :type code: int
+        :param msg: 重定向状态文本。
+        :type msg: str
+        :param headers: 重定向响应头。
+        :type headers: object
+        :param newurl: 重定向目标地址。
+        :type newurl: str
+        :return: 空结果表示不跟随重定向。
+        :rtype: None
+        """
+
+        # 返回空结果阻止自动重定向。
+        return None
 
 
 @dataclass
@@ -58,16 +100,20 @@ class ProtocolHttpClient:
 
     :param base_url: 平台根地址。
     :type base_url: str
+    :param ssl_context: 可选的自定义 TLS 上下文，用于旧服务器兼容。
+    :type ssl_context: ssl.SSLContext | None
     :return: 协议请求客户端实例。
     :rtype: ProtocolHttpClient
     """
 
-    def __init__(self, base_url):
+    def __init__(self, base_url, ssl_context=None):
         """
         初始化协议请求客户端。
 
         :param base_url: 平台根地址。
         :type base_url: str
+        :param ssl_context: 可选的自定义 TLS 上下文，用于旧服务器兼容。
+        :type ssl_context: ssl.SSLContext | None
         :return: None。
         :rtype: None
         """
@@ -75,13 +121,46 @@ class ProtocolHttpClient:
         # 保存平台根地址。
         self.base_url = base_url.rstrip("/")
 
+        # 保存自定义 TLS 上下文。
+        self.ssl_context = ssl_context
+
         # 初始化 Cookie 容器。
         self.cookie_jar = CookieJar()
 
         # 初始化带 Cookie 管理的 opener。
-        self.opener = build_opener(HTTPCookieProcessor(self.cookie_jar))
+        self.opener = self.build_opener()
 
-    def request(self, method, url, headers, data=None, timeout=30, allow_http_error=False):
+    # 定义会话 opener 构建方法。
+    def build_opener(self, follow_redirects=True):
+
+        """
+        构建当前会话使用的请求 opener。
+
+        :param follow_redirects: 是否允许自动跟随重定向。
+        :type follow_redirects: bool
+        :return: 请求 opener 实例。
+        :rtype: OpenerDirector
+        """
+
+        # 组装 Cookie 处理器。
+        handlers = [HTTPCookieProcessor(self.cookie_jar)]
+
+        # 判断是否注入自定义 TLS 上下文。
+        if self.ssl_context is not None:
+
+            # 追加自定义 TLS 处理器。
+            handlers.append(HTTPSHandler(context=self.ssl_context))
+
+        # 判断是否禁止自动重定向。
+        if not follow_redirects:
+
+            # 追加禁止重定向处理器。
+            handlers.append(NoRedirectHandler())
+
+        # 返回组装完成的 opener。
+        return build_opener(*handlers)
+
+    def request(self, method, url, headers, data=None, timeout=30, allow_http_error=False, follow_redirects=True):
         """
         发送 HTTP 请求。
 
@@ -97,6 +176,8 @@ class ProtocolHttpClient:
         :type timeout: int
         :param allow_http_error: 是否将 HTTP 错误响应作为结果返回。
         :type allow_http_error: bool
+        :param follow_redirects: 是否允许本次请求自动跟随重定向。
+        :type follow_redirects: bool
         :return: HTTP 响应结果。
         :rtype: HttpResult
         """
@@ -104,9 +185,12 @@ class ProtocolHttpClient:
         # 构建标准库请求对象。
         request = Request(url=url, data=data, headers=headers, method=method)
 
+        # 按重定向诉求选择会话 opener。
+        opener = self.opener if follow_redirects else self.build_opener(follow_redirects=False)
+
         try:
             # 发送请求并读取响应。
-            with self.opener.open(request, timeout=timeout) as response:
+            with opener.open(request, timeout=timeout) as response:
                 # 读取响应体。
                 body = response.read()
 
