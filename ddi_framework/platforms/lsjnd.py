@@ -900,30 +900,6 @@ class LsjndPlatform(BasePlatform):
             # 抛出业务日期过晚异常。
             raise RuntimeError(f"{self.company_name} {data_type} 返回日期晚于请求结束日期：{max(business_dates)} > {end_date}")
 
-    # 定义库存输出日期解析方法。
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-
-        """
-        保证库存文件名使用导出当天日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出命名使用的日期。
-        :rtype: str | None
-        """
-
-        # 判断当前数据类型为库存。
-        if data_type == "库存":
-
-            # 返回导出当天日期。
-            return datetime.now().strftime("%Y-%m-%d")
-
-        # 返回流向查询开始日期。
-        return start_date or end_date
 
     # 定义 Excel 写入方法。
     def write_excel(self, rows, headers, data_type, output_path):

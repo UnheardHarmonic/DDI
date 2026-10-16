@@ -508,14 +508,14 @@ class BasePlatform:
         # 读取当前任务结束日期。
         effective_end_date = getattr(date_range, "end_date", "") or end_date
 
-        # 读取商业是否声明库存为当前快照。
-        is_snapshot_inventory = bool("库存" in data_type and self.account.get("库存快照", False))
+        # 判断当前数据类型是否为库存类。
+        is_inventory_type = "库存" in data_type
 
         # 初始化公共下载命名工具。
         watcher = DownloadWatcher("")
 
-        # 返回公共命名工具生成的标准文件名。
-        return watcher.build_target_name(self.company_name, data_type, self.resolve_output_query_date(data_type, effective_start_date, effective_end_date), ".xlsx", start_date=effective_start_date, end_date=effective_end_date, date_mode=date_mode, snapshot_date=self.resolve_output_query_date(data_type, effective_start_date, effective_end_date) if is_snapshot_inventory else None)
+        # 返回公共命名工具生成的标准文件名（库存类统一按导出当天快照日期命名）。
+        return watcher.build_target_name(self.company_name, data_type, self.resolve_output_query_date(data_type, effective_start_date, effective_end_date), ".xlsx", start_date=effective_start_date, end_date=effective_end_date, date_mode=date_mode, snapshot_date=self.resolve_output_query_date(data_type, effective_start_date, effective_end_date) if is_inventory_type else None)
 
     # 定义标准输出命名日期解析方法。
     def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
@@ -536,8 +536,8 @@ class BasePlatform:
         # 判断当前数据类型是否为库存类。
         if "库存" in data_type:
 
-            # 返回库存类优先使用的查询结束日期。
-            return end_date or start_date
+            # 返回库存类命名使用的导出当天日期。
+            return datetime.now().strftime("%Y-%m-%d")
 
         # 返回流向类优先使用的查询开始日期。
         return start_date or end_date

@@ -1725,30 +1725,6 @@ class GjjkPlatform(BasePlatform):
         # 返回公共命名工具生成的文件名。
         return watcher.build_target_name(self.company_name, data_type, query_date, extension_name, start_date=effective_start_date, end_date=effective_end_date, date_mode=date_mode)
 
-    # 定义输出命名日期解析方法。
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-
-        """
-        解析标准文件名使用的业务日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 文件名业务日期。
-        :rtype: str
-        """
-
-        # 判断当前数据类型是否为库存。
-        if "库存" in data_type:
-
-            # 返回库存业务日期。
-            return str(end_date or start_date or "")
-
-        # 返回流向业务月份日期。
-        return str(start_date or end_date or "")
 
     # 定义输出日期范围文本构建方法。
     def build_output_date_part(self, start_date=None, end_date=None):

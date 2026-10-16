@@ -474,27 +474,6 @@ class ScbctPlatform(BasePlatform):
         # 复用协议查询落地流程。
         return self.query_flow_to_excel(data_type, start_date, end_date, output_dir)
 
-    # 定义输出文件日期解析方法。
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-        """
-        为库存使用导出当天日期，为流向使用查询开始日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 文件命名日期。
-        :rtype: str
-        """
-
-        # 库存文件名使用导出当天日期。
-        if self._normalize_data_type(data_type) == "库存":
-            return datetime.now().strftime("%Y-%m-%d")
-
-        # 流向文件名使用查询开始日期。
-        return start_date or end_date or datetime.now().strftime("%Y-%m-%d")
 
     # 定义分页查询方法。
     def _query_platform_data(self, data_type, start_date, end_date):

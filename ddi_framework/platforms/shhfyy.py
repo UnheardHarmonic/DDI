@@ -1208,28 +1208,4 @@ class ShhfyyPlatform(BasePlatform):
         # 返回空值。
         return None
 
-    # 定义输出日期解析方法。
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-
-        """
-        解析输出文件名使用的日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名使用的日期。
-        :rtype: str | None
-        """
-
-        # 判断当前数据类型是否为库存。
-        if "库存" in data_type:
-
-            # 返回导出当天日期。
-            return datetime.now().strftime("%Y-%m-%d")
-
-        # 返回流向类使用的开始日期。
-        return self.normalize_date_text(start_date) or self.normalize_date_text(end_date)
 

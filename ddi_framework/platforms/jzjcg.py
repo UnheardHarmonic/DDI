@@ -976,21 +976,3 @@ class JzjcgPlatform(BasePlatform):
         # 返回空日期。
         return None
 
-    # 定义输出日期解析方法。
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-
-        """
-        解析标准输出文件名使用的日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出文件名使用的日期。
-        :rtype: str | None
-        """
-
-        # 返回流向类使用的查询开始日期。
-        return start_date or end_date or date.today().strftime("%Y-%m-%d")

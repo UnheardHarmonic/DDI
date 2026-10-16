@@ -249,24 +249,18 @@ class DownloadWatcher:
         :rtype: str
         """
 
-        # 库存类使用当天日期。
-        if "库存" in data_type and snapshot_date:
+        # 库存类统一使用导出当天快照日期命名。
+        if "库存" in data_type:
+
+            # 读取显式快照日期，缺省为导出当天日期。
+            snapshot_text = snapshot_date or datetime.now().strftime("%Y-%m-%d")
 
             # 返回库存快照日期标签。
-            return f"快照｜{self._format_full_date(snapshot_date)}"
+            return f"快照｜{self._format_full_date(snapshot_text)}"
 
         # 优先使用完整日期范围命名。
         if start_date and end_date:
             return f"{'整月' if date_mode == 'previous_month_full' else '范围'}｜{self._format_full_date(start_date)}~{self._format_full_date(end_date)}"
-
-        # 处理未提供日期范围的库存类导出。
-        if "库存" in data_type:
-
-            # 读取导出当天日期。
-            date_text = datetime.now().strftime("%Y-%m-%d")
-
-            # 返回库存默认快照日期标签。
-            return f"快照｜{self._format_full_date(date_text)}"
 
         # 无查询日期时返回空文案。
         if not query_date:

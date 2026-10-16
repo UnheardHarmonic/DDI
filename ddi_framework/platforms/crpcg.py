@@ -24,8 +24,6 @@ import os
 import ssl
 
 
-
-
 # 导入 Excel 工作簿对象。
 from openpyxl import Workbook
 
@@ -319,31 +317,6 @@ class CrpcgPlatform(BasePlatform):
         # 返回 Excel 文件路径。
         return output_path
 
-
-    # 定义库存命名日期解析方法。
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-
-        """
-        为库存使用导出当天日期，为流向使用查询开始日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 文件命名使用的日期文本。
-        :rtype: str
-        """
-
-        # 判断当前数据类型是否为库存。
-        if data_type == "库存":
-
-            # 返回库存导出当天日期。
-            return datetime.now().strftime("%Y-%m-%d")
-
-        # 返回流向查询开始日期。
-        return start_date or end_date or datetime.now().strftime("%Y-%m-%d")
 
     # 定义平台数据查询方法。
     def query_platform_data(self, data_type, start_date, end_date):

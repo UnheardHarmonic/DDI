@@ -14,6 +14,9 @@ import tempfile
 # 导入单元测试工具。
 import unittest
 
+# 导入日期时间模块。
+from datetime import datetime
+
 # 导入 Excel 工作簿读取工具。
 from openpyxl import load_workbook
 
@@ -105,8 +108,11 @@ class TaskDomainTests(unittest.TestCase):
         # 断言整月命名格式正确。
         self.assertEqual(full_name, "「DDI」测试商业｜整月｜2026.08.01~2026.08.31｜配送流向.xlsx")
 
-        # 断言可过滤库存使用范围命名。
-        self.assertEqual(inventory_range_name, "「DDI」测试商业｜范围｜2026.08.01~2026.09.03｜门店库存.xlsx")
+        # 断言库存类即使携带日期过滤也使用导出当天快照命名。
+        today_label = datetime.now().strftime("%Y.%m.%d")
+
+        # 断言快照标签为当天日期。
+        self.assertEqual(inventory_range_name, f"「DDI」测试商业｜快照｜{today_label}｜门店库存.xlsx")
 
         # 断言显式快照库存使用快照命名。
         self.assertEqual(snapshot_name, "「DDI」测试商业｜快照｜2026.09.03｜库存.xlsx")

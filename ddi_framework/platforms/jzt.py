@@ -819,29 +819,6 @@ class JztPlatform(BasePlatform):
         # 返回完整字段映射。
         return columns
 
-    # 定义库存输出日期解析方法。
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-        """
-        解析九州通标准输出文件名使用的业务日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 标准输出文件名使用的业务日期。
-        :rtype: str | None
-        """
-
-        # 判断当前数据类型是否为库存类。
-        if "库存" in data_type:
-
-            # 返回导出当天日期作为库存命名日期。
-            return datetime.now().strftime("%Y-%m-%d")
-
-        # 返回流向类查询开始日期。
-        return start_date or end_date
 
     # 定义九州通数据类型校验方法。
     def validate_data_type(self, data_type):
@@ -857,8 +834,6 @@ class JztPlatform(BasePlatform):
         # 校验数据类型是否存在。
         if data_type not in ["配送流向", "购进流向", "库存", "报损流向"]:
             raise NotImplementedError(f"当前九州通暂未接入: {data_type}")
-
-
 
 
     # 定义配送流向分页查询方法。

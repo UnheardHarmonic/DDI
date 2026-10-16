@@ -345,30 +345,6 @@ class CombrainJyscPlatform(BasePlatform):
         # 返回 Excel 文件路径。
         return target_path
 
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-
-        """
-        解析标准输出文件名使用的业务日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 标准输出文件名使用的业务日期。
-        :rtype: str | None
-        """
-
-        # 判断当前数据类型是否为库存类。
-        if data_type == "库存":
-
-            # 返回库存类使用的运行当天日期。
-            return datetime.now().strftime("%Y-%m-%d")
-
-        # 返回流向类使用的查询开始日期。
-        return start_date or end_date
-
 
     def ensure_logged_in(self):
 

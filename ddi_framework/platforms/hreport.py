@@ -15,10 +15,8 @@ from datetime import datetime
 from urllib.parse import urlencode
 
 
-
 # 导入请求构造对象。
 from urllib.request import Request
-
 
 
 # 导入协议请求客户端。
@@ -1420,33 +1418,6 @@ class HreportPlatform(BasePlatform):
 
         # 返回当前数据类型对应的功能编号。
         return mapping[data_type]
-
-
-    # 定义库存导出命名日期解析方法。
-    def resolve_output_query_date(self, data_type, start_date=None, end_date=None):
-
-        """
-        解析 HReport 文件命名使用的业务日期。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :return: 输出命名使用的日期。
-        :rtype: str | None
-        """
-
-        # 判断当前类型是否为库存。
-        if data_type == "库存":
-
-            # 返回库存导出当天日期。
-            return datetime.now().strftime("%Y-%m-%d")
-
-        # 返回流向查询开始日期。
-        return start_date or end_date
-
 
 
     # 定义通用 Excel 写入方法。
