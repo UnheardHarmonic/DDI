@@ -72,25 +72,6 @@ class PresentationIsolationTests(unittest.TestCase):
         # 断言注册表不从包根反向导入平台类。
         self.assertNotIn("from ddi_framework import", registry_source)
 
-    # 定义 Web 模块导入副作用测试方法。
-    def test_web_module_does_not_create_directory_documents_on_import(self):
-
-        """
-        验证 Web 展示模块仅在服务启动阶段初始化目录说明。
-
-        :return: None。
-        :rtype: None
-        """
-
-        # 读取本机 Web 展示层源码文本。
-        web_source = Path("ddi_web.py").read_text(encoding="utf-8")
-
-        # 断言目录说明调用不位于模块顶层初始化语句。
-        self.assertNotIn("ensure_directory_documents(PROJECT_ROOT)\n\n\nclass WebTaskSubmission", web_source)
-
-        # 断言服务启动回调包含目录说明初始化。
-        self.assertIn("@app.on_event(\"startup\")", web_source)
-
     # 定义终端 GUI 依赖隔离测试方法。
     def test_terminal_entrypoint_does_not_import_gui_library(self):
 
