@@ -167,3 +167,10 @@
 - 不回滚用户或其他对话框已经产生的无关修改。
 
 
+
+## 多设备同步纪律（GitHub 唯一接入点）
+
+- 本项目唯一远程仓库：GitHub 私有仓库 UnheardHarmonic/DDI（master 分支，2026-10-16 由废仓 shybyf-ddi-releases 改名承接，旧 SHYBYF 历史已按董事长口径清退）。
+- 换设备或收工前 push，开工前 pull；接手他机产出先核对最新提交与启动更新日志的版本现状。
+- 零凭据入库铁律：`account_config_local.py`（真实账号密码）、`config/license.json`、`config/account_runtime.json`、`runtime/`、`dist/`、`.venv/` 一律由 .gitignore 排除，推送前必须复扫历史与暂存区零泄漏。
+- 本机远程地址内嵌按仓隔离的细粒度令牌（与公司仓同一管理口径）；令牌轮换时同步更新 remote URL 与记忆台账。
