@@ -29,8 +29,8 @@ from urllib.parse import urljoin
 # 导入日志打印器。
 from ddi_framework import PrintHandler
 
-# 导入江苏澳洋 FineReport 平台适配器。
-from ddi_framework.platforms.jsay import JsayPlatform
+# 导入 FineReport 平台公共骨架。
+from ddi_framework.platforms.finereport_common import FineReportPlatformBase
 
 
 # 定义卫民 FineReport 数据类型与页面配置映射。
@@ -62,7 +62,7 @@ REPORT_DEFINITIONS = {
 }
 
 
-class JswmPlatform(JsayPlatform):
+class JswmPlatform(FineReportPlatformBase):
     """
     江苏卫民数据智能管理系统协议适配器。
 
@@ -90,7 +90,7 @@ class JswmPlatform(JsayPlatform):
         :rtype: None
         """
 
-        # 调用江苏澳洋 FineReport 平台基类初始化逻辑。
+        # 调用 FineReport 公共骨架初始化逻辑。
         super().__init__(company_name, account, printer=printer)
 
         # 初始化日志打印器。
@@ -105,7 +105,26 @@ class JswmPlatform(JsayPlatform):
         # 初始化菜单树缓存。
         self.menu_tree = []
 
+    # 定义数据类型校验方法。
+    def validate_data_type(self, data_type):
+
+        """
+        校验数据类型是否已配置卫民报表。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :return: None。
+        :rtype: None
+        """
+
+        # 判断数据类型是否存在报表定义。
+        if data_type not in REPORT_DEFINITIONS:
+
+            # 抛出数据类型未接入异常。
+            raise ValueError(f"江苏卫民平台暂不支持数据类型：{data_type}")
+
     def login(self):
+
         """
         执行江苏卫民供应商自助系统协议登录。
 

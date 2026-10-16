@@ -65,7 +65,7 @@ from ddi_framework import BasePlatform
 from ddi_framework import PrintHandler
 
 # 导入 FineReport 表格解析器。
-from ddi_framework.platforms.jsay import FineReportTableParser
+from ddi_framework.platforms.finereport_common import FineReportTableParser
 
 
 # 定义一心堂 SRM 默认报表入口。
