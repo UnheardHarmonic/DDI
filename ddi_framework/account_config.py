@@ -1003,6 +1003,31 @@ ACCOUNTS = {
         "数据类型列表": [],
         "启用": False,
     },
+    "广西好药师大药房连锁有限公司": {
+        "平台": "jzt",
+        "账号": "",
+        "密码": "",
+        "登录页": "https://flow.jztit.com/user/login.html",
+        "操作员名称": "桂林华诺威基因药业股份有限公司",
+        "机构": ["FC6"],
+        "日志机构编码": "FC6",
+        "视图查询配置": {
+            "配送流向": {
+                "sqlId": "/hyschainsalequery/hyschainsalequery@query",
+                "参数": {"appUserName": "{login_name}", "startDate": "{start_date}", "endDate": "{end_date}", "chainHeadName": "广西好药师大药房连锁有限公司", "storeName": "", "splitBill": 0},
+            },
+            "购进流向": {
+                "sqlId": "/hyschainpurquery/hyschainpurquery@query",
+                "参数": {"appUserName": "{login_name}", "startDate": "{start_date}", "endDate": "{end_date}"},
+            },
+            "库存": {
+                "sqlId": "/hyschaininvquery/hyschaininvquery@query",
+                "参数": {"appUserName": "{login_name}"},
+            },
+        },
+        "数据类型列表": ["配送流向", "购进流向", "库存"],
+        "启用": True,
+    },
     "娄底市健康南门医药零售连锁有限公司": {
         "平台": "hreport",
         "账号": "",
@@ -1694,6 +1719,7 @@ ACCOUNT_DIMENSIONS = {
     "国控国大(江门)医药有限公司": {"大区": "华南", "省份": "广东省", "负责人": "覃祝燕"},
     "国药控股国大药房广西连锁有限公司": {"大区": "西南华中", "省份": "广西壮族自治区", "负责人": "梁彬彬"},
     "湖南千金大药房连锁有限公司": {"大区": "西南华中", "省份": "湖南省", "负责人": "晏惟学"},
+    "广西好药师大药房连锁有限公司": {"大区": "西南华中", "省份": "广西壮族自治区", "负责人": "梁彬彬"},
     "娄底市健康南门医药零售连锁有限公司": {"大区": "西南华中", "省份": "湖南省", "负责人": "晏惟学"},
     "大参林医药集团股份有限公司": {"大区": "KA", "省份": "大参林", "负责人": "晏惟学"},
     "黑龙江省大众平安医药连锁有限公司": {"大区": "西北东北", "省份": "黑龙江省", "负责人": "覃祝燕"},

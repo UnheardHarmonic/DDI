@@ -428,6 +428,12 @@ class JztPlatform(BasePlatform):
         :rtype: dict
         """
 
+        # 判断当前数据类型是否配置了视图查询映射。
+        if self.resolve_view_query_config(data_type):
+
+            # 走本地查询汇聚生成 Excel。
+            return self.query_flow_to_excel(data_type, start_date, end_date, output_dir)
+
         # 校验当前数据类型是否为已接入的配送流向。
         if data_type != "配送流向":
             raise NotImplementedError(f"当前仅接入配送流向，暂未接入: {data_type}")
@@ -470,6 +476,12 @@ class JztPlatform(BasePlatform):
         :rtype: list[dict]
         """
 
+        # 判断当前数据类型是否配置了视图查询映射。
+        if self.resolve_view_query_config(data_type):
+
+            # 走视图查询通道返回全量数据行。
+            return self.query_view_data(data_type, start_date, end_date)
+
         # 校验查询开始日期。
         if not start_date:
             raise ValueError(f"查询{data_type}必须提供 start_date")
@@ -498,19 +510,41 @@ class JztPlatform(BasePlatform):
         :rtype: str
         """
 
+        # 判断当前数据类型是否配置了视图查询映射。
+        view_rows = None
+
+        # 初始化列映射容器。
+        columns = None
+
+        # 判断是否走视图查询通道。
+        if self.resolve_view_query_config(data_type):
+
+            # 走视图查询通道取全量数据行。
+            view_rows = self.query_view_data(data_type, start_date, end_date)
+
         # 校验查询开始日期。
-        if not start_date:
-            raise ValueError(f"查询{data_type}必须提供 start_date")
+        if not view_rows and not self.resolve_view_query_config(data_type):
 
-        # 校验查询结束日期。
-        if not end_date:
-            raise ValueError(f"查询{data_type}必须提供 end_date")
+            # 校验查询开始日期。
+            if not start_date:
 
-        # 查询指定数据类型全量数据。
-        rows = self.query_jzt_data(data_type, start_date, end_date)
+                # 抛出查询开始日期缺失异常。
+                raise ValueError(f"查询{data_type}必须提供 start_date")
 
-        # 合并标准字段与接口原始字段。
-        columns = self.build_complete_jzt_columns(data_type, rows)
+            # 校验查询结束日期。
+            if not end_date:
+
+                # 抛出查询结束日期缺失异常。
+                raise ValueError(f"查询{data_type}必须提供 end_date")
+
+        # 判断是否已取得视图查询数据行。
+        if view_rows is None:
+
+            # 查询指定数据类型全量数据。
+            view_rows = self.query_jzt_data(data_type, start_date, end_date)
+
+            # 合并标准字段与接口原始字段。
+            columns = self.build_complete_jzt_columns(data_type, view_rows)
 
         # 使用调用方指定目录或默认下载目录。
         output_dir = output_dir or os.path.join(os.getcwd(), "downloads")
@@ -524,15 +558,149 @@ class JztPlatform(BasePlatform):
         # 构建 Excel 输出路径。
         output_path = os.path.join(output_dir, file_name)
 
+        # 判断视图查询通道的列映射是否已构建。
+        if columns is None:
+
+            # 按接口返回顺序构建原名字段映射。
+            columns = {}
+
+            # 遍历视图查询数据行。
+            for row in view_rows:
+
+                # 遍历当前行字段。
+                for field_name in row.keys():
+
+                    # 按首次出现顺序记录原名字段。
+                    columns.setdefault(field_name, field_name)
+
         # 写入 Excel 文件。
-        self.write_rows_to_excel(rows, output_path, columns, data_type)
+        self.write_rows_to_excel(view_rows, output_path, columns, data_type)
 
         # 打印 Excel 保存日志。
         # 打印 Excel 保存日志。
-        self.ph.success(self.ph.join(self.ph.kv(f"{data_type} Excel 已生成", self.ph.path(output_path), "green"), self.ph.kv("记录数", f"{len(rows)} 条", "cyan")))
+        self.ph.success(self.ph.join(self.ph.kv(f"{data_type} Excel 已生成", self.ph.path(output_path), "green"), self.ph.kv("记录数", f"{len(view_rows)} 条", "cyan")))
 
         # 返回 Excel 文件路径。
         return output_path
+
+    # 定义视图查询映射解析方法。
+    def resolve_view_query_config(self, data_type):
+
+        """
+        解析当前数据类型的视图查询映射配置。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :return: 视图查询配置字典或 None。
+        :rtype: dict | None
+        """
+
+        # 读取账号配置中的视图查询映射。
+        view_configs = self.account.get("视图查询配置") or {}
+
+        # 返回指定类型的配置项。
+        return view_configs.get(data_type)
+
+    # 定义视图查询参数渲染方法。
+    def build_view_query_params(self, view_config, start_date, end_date):
+
+        """
+        渲染视图查询的请求参数。
+
+        :param view_config: 视图查询配置项。
+        :type view_config: dict
+        :param start_date: 查询开始日期。
+        :type start_date: str | None
+        :param end_date: 查询结束日期。
+        :type end_date: str | None
+        :return: 渲染后的请求参数。
+        :rtype: dict
+        """
+
+        # 初始化渲染上下文。
+        render_context = {"login_name": self.clean_login_name(), "start_date": start_date or "", "end_date": end_date or ""}
+
+        # 初始化渲染后的参数。
+        rendered_params = {}
+
+        # 遍历配置参数项。
+        for param_name, param_value in (view_config.get("参数") or {}).items():
+
+            # 判断参数值是否为字符串模板。
+            if isinstance(param_value, str):
+
+                # 渲染字符串模板参数。
+                rendered_params[param_name] = param_value.format(**render_context)
+
+            else:
+
+                # 保留非字符串参数原值。
+                rendered_params[param_name] = param_value
+
+        # 返回渲染后的参数。
+        return rendered_params
+
+    # 定义视图查询方法。
+    def query_view_data(self, data_type, start_date=None, end_date=None):
+
+        """
+        通过视图查询映射查询单请求全量数据。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param start_date: 查询开始日期。
+        :type start_date: str | None
+        :param end_date: 查询结束日期。
+        :type end_date: str | None
+        :return: 查询结果数据行。
+        :rtype: list[dict]
+        """
+
+        # 校验数据类型是否已接入。
+        self.validate_data_type(data_type)
+
+        # 确保当前会话已经登录（jzt 平台不维护 logged_in 属性，按守卫直接登录）。
+        if not getattr(self, "logged_in", False):
+
+            # 执行平台登录流程。
+            self.login()
+
+        # 读取视图查询配置项。
+        view_config = self.resolve_view_query_config(data_type)
+
+        # 打印查询阶段标题。
+        self.ph.section(f"{data_type}视图查询", self.ph.join(self.ph.kv("开始日期", start_date or "-", "cyan"), self.ph.kv("结束日期", end_date or "-", "cyan")))
+
+        # 写入查询日志。
+        self.write_flow_log("8", self.build_jzt_log_text(data_type, "查询", start_date, end_date))
+
+        # 渲染查询参数。
+        params = self.build_view_query_params(view_config, start_date, end_date)
+
+        # 构建查询请求体。
+        payload = {"db": "db", "filterModel": {}, "sortModel": [], "params": params, "sqlId": view_config.get("sqlId")}
+
+        # 打印查询请求日志。
+        self.ph.info(self.ph.kv(f"请求{data_type}视图查询", view_config.get("sqlId"), "cyan"))
+
+        # 发送视图查询请求。
+        result = self.http.post_json(urljoin(self.base_url, self.query_api_path), payload, self.login_page_url)
+
+        # 解析查询响应。
+        response_data = self.http.decode_json(result)
+
+        # 校验查询响应。
+        if not response_data.get("success"):
+            raise RuntimeError(f"{data_type}视图查询失败：{response_data.get('msg') or response_data}")
+
+        # 读取响应业务数据行。
+        all_rows = (response_data.get("data") or {}).get("data") or []
+
+        # 打印查询完成日志。
+        self.ph.success(self.ph.kv(f"{data_type} 视图查询完成", f"{len(all_rows)} 条", "green"))
+
+        # 返回全量数据行。
+        return all_rows
 
     # 定义九州通通用分页查询方法。
     def query_jzt_data(self, data_type, start_date, end_date, page_size=100):
