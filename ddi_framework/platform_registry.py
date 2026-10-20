@@ -35,6 +35,9 @@ from ddi_framework.platforms.gdwst import GdwstPlatform
 # 导入HReport 供应商查询系统适配器。
 from ddi_framework.platforms.hreport import HreportPlatform
 
+# 导入国大药房流向数据平台适配器。
+from ddi_framework.platforms.guoda import GuodaPlatform
+
 # 导入福建九州通中化平台适配器。
 from ddi_framework.platforms.fjjztzh import FjjztzhPlatform
 
@@ -186,6 +189,7 @@ PLATFORM_REGISTRY = {
     "fjxzj": FjxzjPlatform,
     "gdwst": GdwstPlatform,
     "hreport": HreportPlatform,
+    "guoda": GuodaPlatform,
     "fjjztzh": FjjztzhPlatform,
     "gkgdjm": GkgdjmPlatform,
     "dsl": DslPlatform,
