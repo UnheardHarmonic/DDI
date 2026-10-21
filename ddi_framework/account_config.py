@@ -1013,8 +1013,8 @@ ACCOUNTS = {
         "登录页": "https://cqp-sxy-sso.cq-p.com.cn/#/login",
         "登录接口": "https://cqp-sxy-sso.cq-p.com.cn/api/cqp-sxy-sso-server/blade/doLogin",
         "验证码接口": "https://cqp-sxy-sso.cq-p.com.cn/api/blade-auth/oauth/captcha",
-        "数据类型列表": [],
-        "启用": False,
+        "数据类型列表": ["纯销流向", "配送流向", "购进流向", "库存", "报损流向"],
+        "启用": True,
     },
     "广西好药师大药房连锁有限公司": {
         "平台": "jzt",

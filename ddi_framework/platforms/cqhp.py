@@ -2,12 +2,12 @@
 """
 重庆医药流向系统协议适配器。
 
-本模块负责重庆和平药房供应商体系（重庆医药流向系统）的协议登录与登录态验证。
-登录协议已全量实证：BladeX SSO（blade/doLogin，密码 DES-ECB 加密 key=test1234，
-验证码为失败后启用的双状态机制——首轮无码、失败后经 Captcha-Key/Captcha-Code 请求头
-携带图形验证码，图形码经 ddddocr 识别）。
-按董事长给定凭据实测，服务端在验证码层通过后于凭据层拒绝（疑似账号连败锁定或密码变更），
-故本模块数据查询暂不开放，待凭据验证通过后按五类型端点映射开启。
+本模块负责重庆和平药房供应商体系（重庆医药流向系统）的协议登录、
+验证码双状态自动处理、五类型数据查询、分页汇聚和原始字段 Excel 落地。
+BladeX SSO（blade/doLogin，密码 DES-ECB 加密 key=test1234）+
+JWT Bearer 数据接口（/server/*HpTarget/page 系列分页查询）。
+按董事长给定凭据实测，服务端在验证码层通过后于凭据层拒绝
+（疑似账号连败锁定或密码变更），待凭据修正后全量通道即可生效。
 """
 
 # 导入 Base64 编解码模块。
@@ -19,11 +19,23 @@ import json
 # 导入表单编码函数。
 from urllib.parse import urlencode
 
+# 导入时间模块。
+import time
+
+# 导入随机数模块。
+import random
+
+# 导入表单编码函数。
+from urllib.parse import urlencode
+
 # 导入操作系统路径模块。
 import os
 
-# 导入类型标注对象。
-from typing import Any, Dict, Optional
+# 导入时间模块。
+import time
+
+# 导入随机数模块。
+import random
 
 # 导入平台基类。
 from ddi_framework import BasePlatform
@@ -38,7 +50,7 @@ from ddi_framework import CaptchaSolver
 from ddi_framework import PrintHandler
 
 
-# 定义平台站点地址常量。
+# 定义平台 SSO 站点地址常量。
 SSO_BASE_URL = "https://cqp-sxy-sso.cq-p.com.cn"
 
 # 定义数据平台站点地址常量。
@@ -58,7 +70,7 @@ DES_KEY = b"test1234"
 class CqhpPlatform(BasePlatform):
 
     """
-    重庆医药流向系统协议适配器（仅登录）。
+    重庆医药流向系统协议适配器。
 
     :param company_name: 商业公司名称。
     :type company_name: str
@@ -70,7 +82,13 @@ class CqhpPlatform(BasePlatform):
     :rtype: CqhpPlatform
     """
 
-    # 定义数据类型到查询端点的映射（凭据验证通过后开放）。
+    # 定义平台支持的接入数据类型。
+    SUPPORTED_TYPES = ["纯销流向", "配送流向", "购进流向", "库存", "报损流向"]
+
+    # 定义流向类数据类型清单。
+    FLOW_TYPES = ["纯销流向", "配送流向", "购进流向", "报损流向"]
+
+    # 定义数据类型到查询端点路径的映射。
     DATA_PATHS = {
         "纯销流向": "/server/retailHpTarget/page",
         "配送流向": "/server/headOfficeSalesHpTarget/page",
@@ -78,6 +96,15 @@ class CqhpPlatform(BasePlatform):
         "库存": "/server/factInventoryflowHp/page",
         "报损流向": "/server/factIncomestatementPf/pageFactIncomestatementPf",
     }
+
+    # 定义分页大小。
+    PAGE_SIZE = 100
+
+    # 定义分页安全上限页数。
+    MAX_PAGES = 500
+
+    # 定义登录验证码最大识别尝试次数。
+    MAX_LOGIN_ATTEMPTS = 8
 
     # 定义平台适配器初始化方法。
     def __init__(self, company_name, account, printer=None):
@@ -101,7 +128,7 @@ class CqhpPlatform(BasePlatform):
         # 初始化日志打印器。
         self.ph = printer or PrintHandler()
 
-        # 保存平台站点地址。
+        # 保存认证平台站点地址。
         self.sso_base_url = str(account.get("认证站点地址", SSO_BASE_URL)).rstrip("/")
 
         # 保存数据平台站点地址。
@@ -135,7 +162,7 @@ class CqhpPlatform(BasePlatform):
     def validate_data_type(self, data_type):
 
         """
-        校验平台数据类型（凭据验证通过前数据类型均未开放）。
+        校验平台数据类型。
 
         :param data_type: 数据类型名称。
         :type data_type: str
@@ -143,8 +170,11 @@ class CqhpPlatform(BasePlatform):
         :rtype: None
         """
 
-        # 按凭据阻塞现状抛出未接入异常。
-        raise NotImplementedError(f"重庆和平平台数据查询暂未开放（待凭据验证通过后开启）: {data_type}")
+        # 判断数据类型是否已接入。
+        if data_type not in self.SUPPORTED_TYPES:
+
+            # 抛出数据类型未接入异常。
+            raise NotImplementedError(f"重庆和平平台暂未接入: {data_type}")
 
     # 定义日期区间要求判断方法。
     def requires_date_range(self, data_type):
@@ -185,7 +215,7 @@ class CqhpPlatform(BasePlatform):
         # 过滤弃用警告。
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # 按_PKCS5/7 规范填充明文。
+        # 按 PKCS5/7 规范填充明文。
         padder = PKCS7(64).padder()
 
         # 执行填充。
@@ -218,7 +248,7 @@ class CqhpPlatform(BasePlatform):
         last_message = ""
 
         # 循环验证码重试（首轮无验证码，后续带识别验证码）。
-        for attempt_index in range(1, 9):
+        for attempt_index in range(1, self.MAX_LOGIN_ATTEMPTS + 1):
 
             # 构建基础登录参数（首轮无验证码，验证码字段留空）。
             login_params = {
@@ -240,10 +270,10 @@ class CqhpPlatform(BasePlatform):
             if attempt_index > 1:
 
                 # 拉取会话绑定的图形验证码。
-                status_code, captcha_text = self.http.request("GET", self.captcha_api_url, headers=self.build_page_headers(), timeout=30)
+                captcha_result = self.http.request("GET", self.captcha_api_url, headers=self.build_page_headers(), timeout=30)
 
                 # 解析验证码响应。
-                captcha_data = (json.loads(captcha_text).get("data") or {})
+                captcha_data = (json.loads(captcha_result.body.decode("utf-8", errors="replace")).get("data") or {})
 
                 # 读取验证码键值。
                 captcha_key = str(captcha_data.get("key") or "")
@@ -335,11 +365,11 @@ class CqhpPlatform(BasePlatform):
         # 抛出登录失败异常。
         raise RuntimeError(f"{self.company_name} 重庆和平平台登录失败：{last_message}")
 
-    # 定义流向查询方法（待凭据验证后开放）。
-    def query_flow(self, data_type, start_date=None, end_date=None):
+    # 定义构建查询过滤模型方法。
+    def build_data_filter(self, data_type, start_date, end_date):
 
         """
-        查询流向数据（未开放）。
+        构建数据查询的过滤模型。
 
         :param data_type: 数据类型名称。
         :type data_type: str
@@ -347,18 +377,249 @@ class CqhpPlatform(BasePlatform):
         :type start_date: str | None
         :param end_date: 查询结束日期。
         :type end_date: str | None
-        :return: 无返回。
+        :return: 过滤模型字典。
+        :rtype: dict
+        """
+
+        # 判断当前类型是否为纯销流向（门店零售）。
+        if data_type == "纯销流向":
+
+            # 返回纯销过滤模型。
+            return {"flag": 0, "outboundStartDate": start_date or "", "outboundEndDate": end_date or "", "returnMoney": None, "returnSales": None, "userId": self.data_user_id}
+
+        # 判断当前类型是否为配送流向（总部销售）。
+        if data_type == "配送流向":
+
+            # 返回配送过滤模型。
+            return {"outboundStartDate": start_date or "", "outboundEndDate": end_date or "", "flag": 0, "returnMoney": 0, "returnSales": 0, "userId": self.data_user_id}
+
+        # 判断当前类型是否为购进流向。
+        if data_type == "购进流向":
+
+            # 返回购进过滤模型。
+            return {"goodsId": "", "tradeMark": "", "agentName": "", "commodity": "", "inStcDateBegin": start_date or "", "inStcDateEnd": end_date or "", "userId": self.data_user_id}
+
+        # 判断当前类型是否为报损流向。
+        if data_type == "报损流向":
+
+            # 返回报损过滤模型。
+            return {"type": "报损", "startTime": start_date or "", "endDate": end_date or "", "userId": self.data_user_id}
+
+        # 库存类型返回空过滤模型（快照查询无日期条件）。
+        return {"userId": self.data_user_id}
+
+    # 定义单页查询方法。
+    def query_one_page(self, data_type, filter_model, page_number):
+
+        """
+        查询重庆医药流向系统单页数据。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param filter_model: 过滤模型字典。
+        :type filter_model: dict
+        :param page_number: 页码。
+        :type page_number: int
+        :return: 平台原始分页响应。
+        :rtype: dict
+        """
+
+        # 构建查询参数（查询串承载分页）。
+        page_params = {"currentPage": str(page_number), "pageSize": str(self.PAGE_SIZE)}
+
+        # 构建查询请求体。
+        body = json.dumps(filter_model, ensure_ascii=False).encode("utf-8")
+
+        # 构建 AJAX 请求头。
+        headers = self.build_data_headers()
+
+        # 打印分页请求日志。
+        self.ph.info(self.ph.join(self.ph.kv(f"请求{data_type}分页", self.DATA_PATHS[data_type], "cyan"), self.ph.kv("currentPage", page_number, "yellow"), self.ph.kv("pageSize", self.PAGE_SIZE, "cyan")))
+
+        # 拼接完整 URL（查询串承载分页参数）。
+        url = self.data_base_url + self.DATA_PATHS[data_type] + "?" + urlencode(page_params)
+
+        # 提交查询请求。
+        result = self.http.request("POST", url, headers=headers, data=body, timeout=300, allow_http_error=True)
+
+        # 解析查询响应。
+        response_data = json.loads(result.body.decode("utf-8", errors="replace"))
+
+        # 返回原始响应。
+        return response_data
+
+    # 定义数据查询方法。
+    def query_data(self, data_type, start_date=None, end_date=None):
+
+        """
+        查询重庆医药流向系统全量数据并汇聚原始字段。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param start_date: 查询开始日期。
+        :type start_date: str | None
+        :param end_date: 查询结束日期。
+        :type end_date: str | None
+        :return: 查询结果与表头。
+        :rtype: dict
+        """
+
+        # 校验数据类型。
+        self.validate_data_type(data_type)
+
+        # 确保当前会话已经登录。
+        self.ensure_login()
+
+        # 打印查询阶段标题。
+        self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date or "-", "cyan"), self.ph.kv("结束日期", end_date or "-", "cyan")))
+
+        # 构建过滤模型。
+        filter_model = self.build_data_filter(data_type, start_date, end_date)
+
+        # 查询第一页数据。
+        first_page = self.query_one_page(data_type, filter_model, 1)
+
+        # 读取业务数据块。
+        data_block = first_page.get("data") or {}
+
+        # 读取当前页数据行。
+        first_rows = data_block.get("records") or []
+
+        # 读取总记录数。
+        total_count = int(data_block.get("total") or 0)
+
+        # 初始化累计数据行。
+        all_rows = list(first_rows)
+
+        # 打印首页完成日志。
+        self.ph.success(self.ph.join(self.ph.kv("首页解析完成", f"{len(first_rows)} 条", "green"), self.ph.kv("总数", total_count, "cyan")))
+
+        # 计算总页数。
+        total_pages = (total_count + self.PAGE_SIZE - 1) // self.PAGE_SIZE if total_count else 1
+
+        # 遍历剩余页码。
+        for page_number in range(2, min(total_pages, self.MAX_PAGES) + 1):
+
+            # 判断累计行数是否已满足总数。
+            if len(all_rows) >= total_count:
+
+                # 结束分页遍历。
+                break
+
+            # 查询当前页数据。
+            page_response = self.query_one_page(data_type, filter_model, page_number)
+
+            # 读取业务数据块。
+            page_block = page_response.get("data") or {}
+
+            # 读取当前页数据行。
+            current_rows = page_block.get("records") or []
+
+            # 判断当前页是否已无数据。
+            if not current_rows:
+
+                # 结束分页遍历。
+                break
+
+            # 累加当前页数据行。
+            all_rows.extend(current_rows)
+
+            # 打印当前页完成日志。
+            self.ph.success(self.ph.join(self.ph.kv("当前页解析完成", f"{len(current_rows)} 条", "green"), self.ph.kv("累计", f"{len(all_rows)} 条", "cyan"), self.ph.kv("总数", total_count, "cyan")))
+
+            # 分页请求之间保持轻量间隔。
+            time.sleep(random.uniform(0.05, 0.15))
+
+        # 按首次出现顺序汇聚跨页字段并集。
+        columns = {}
+
+        # 遍历全量数据行。
+        for row in all_rows:
+
+            # 遍历当前行字段。
+            for field_name in row.keys():
+
+                # 按首次出现顺序记录原名字段。
+                columns.setdefault(field_name, field_name)
+
+        # 打印汇聚完成日志。
+        self.ph.success(self.ph.kv(f"{data_type} 查询完成", f"{len(all_rows)} 条 | {len(columns)} 列"))
+
+        # 返回查询结果与表头。
+        return {"rows": all_rows, "headers": list(columns.keys())}
+
+    # 定义流向查询方法。
+    def query_flow(self, data_type, start_date=None, end_date=None):
+
+        """
+        查询重庆医药流向系统流向数据。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param start_date: 查询开始日期。
+        :type start_date: str | None
+        :param end_date: 查询结束日期。
+        :type end_date: str | None
+        :return: 查询结果数据行。
         :rtype: list[dict]
         """
 
-        # 校验数据类型并抛出未开放异常。
-        self.validate_data_type(data_type)
+        # 查询指定类型数据。
+        query_result = self.query_data(data_type, start_date, end_date)
 
-    # 定义流向导出方法（待凭据验证后开放）。
+        # 返回查询结果数据行。
+        return query_result["rows"]
+
+    # 定义流向导出 Excel 方法。
+    def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
+
+        """
+        查询重庆医药流向系统数据并生成原始字段 Excel。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param start_date: 查询开始日期。
+        :type start_date: str | None
+        :param end_date: 查询结束日期。
+        :type end_date: str | None
+        :param output_dir: 输出目录。
+        :type output_dir: str | None
+        :return: Excel 文件路径。
+        :rtype: str
+        """
+
+        # 使用调用方指定目录或默认下载目录。
+        output_dir = output_dir or os.path.join(os.getcwd(), "downloads")
+
+        # 创建输出目录。
+        os.makedirs(output_dir, exist_ok=True)
+
+        # 查询平台数据。
+        query_result = self.query_data(data_type, start_date, end_date)
+
+        # 构建 Excel 文件名。
+        file_name = self.build_output_file_name(data_type, start_date, end_date)
+
+        # 构建 Excel 输出路径。
+        output_path = os.path.join(output_dir, file_name)
+
+        # 构建列映射（原名兜底）。
+        columns = {field: field for field in query_result["headers"]}
+
+        # 写入原始字段 Excel。
+        self.write_rows_to_excel(query_result["rows"], output_path, columns, data_type)
+
+        # 打印 Excel 保存日志。
+        self.ph.success(self.ph.kv(f"{data_type} Excel 已生成", self.ph.path(output_path), "green"))
+
+        # 返回 Excel 文件路径。
+        return output_path
+
+    # 定义流向导出方法。
     def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
 
         """
-        导出流向数据（未开放）。
+        导出重庆医药流向系统数据。
 
         :param data_type: 数据类型名称。
         :type data_type: str
@@ -368,12 +629,12 @@ class CqhpPlatform(BasePlatform):
         :type end_date: str | None
         :param output_dir: 导出目录。
         :type output_dir: str | None
-        :return: 无返回。
+        :return: 导出文件路径。
         :rtype: str
         """
 
-        # 校验数据类型并抛出未开放异常。
-        self.validate_data_type(data_type)
+        # 委托查询落地方法生成 Excel。
+        return self.query_flow_to_excel(data_type, start_date, end_date, output_dir)
 
     # 定义页面请求头构建方法。
     def build_page_headers(self):
@@ -392,3 +653,26 @@ class CqhpPlatform(BasePlatform):
             "Referer": self.login_page_url,
             "User-Agent": self.http.user_agent(),
         }
+
+    # 定义数据查询请求头构建方法。
+    def build_data_headers(self):
+
+        """
+        构建数据查询请求头。
+
+        :return: 请求头字典。
+        :rtype: dict
+        """
+
+        # 返回数据查询请求头。
+        return {
+            "Accept": "application/json, text/plain, */*",
+            "Authorization": f"Bearer {self.access_token}",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "application/json",
+            "Origin": self.data_base_url,
+            "Referer": self.data_base_url + "/",
+            "User-Agent": self.http.user_agent(),
+        }
+
