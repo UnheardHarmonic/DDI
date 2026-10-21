@@ -1007,7 +1007,7 @@ ACCOUNTS = {
         "平台": "cqhp",
         "账号": "",
         "密码": "",
-        "租户ID": "Yf20262026",
+        "租户ID": "",
         "认证站点地址": "https://cqp-sxy-sso.cq-p.com.cn",
         "数据站点地址": "https://new-data-flow.cq-p.com.cn:8080",
         "登录页": "https://cqp-sxy-sso.cq-p.com.cn/#/login",
@@ -1853,7 +1853,7 @@ def load_local_account_credentials():
             continue
 
         # 遍历允许由私有配置覆盖的账号字段。
-        for field_name in ("账号", "密码"):
+        for field_name in ("账号", "密码", "租户ID"):
 
             # 判断私有配置是否包含当前账号字段。
             if field_name not in local_account:
