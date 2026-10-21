@@ -71,6 +71,7 @@ _LAZY_PLATFORM_EXPORTS = {
     "HreportPlatform": ("hreport", "HreportPlatform"),
     "GuodaPlatform": ("guoda", "GuodaPlatform"),
     "QjdyfPlatform": ("qjdyf", "QjdyfPlatform"),
+    "CqhpPlatform": ("cqhp", "CqhpPlatform"),
     "FjjztzhPlatform": ("fjjztzh", "FjjztzhPlatform"),
     "GkgdjmPlatform": ("gkgdjm", "GkgdjmPlatform"),
     "DslPlatform": ("dsl", "DslPlatform"),

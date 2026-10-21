@@ -41,6 +41,9 @@ from ddi_framework.platforms.guoda import GuodaPlatform
 # 导入千金供应商系统适配器。
 from ddi_framework.platforms.qjdyf import QjdyfPlatform
 
+# 导入重庆医药流向系统适配器。
+from ddi_framework.platforms.cqhp import CqhpPlatform
+
 # 导入福建九州通中化平台适配器。
 from ddi_framework.platforms.fjjztzh import FjjztzhPlatform
 
@@ -194,6 +197,7 @@ PLATFORM_REGISTRY = {
     "hreport": HreportPlatform,
     "guoda": GuodaPlatform,
     "qjdyf": QjdyfPlatform,
+    "cqhp": CqhpPlatform,
     "fjjztzh": FjjztzhPlatform,
     "gkgdjm": GkgdjmPlatform,
     "dsl": DslPlatform,
