@@ -2,12 +2,13 @@
 """
 重庆医药流向系统协议适配器。
 
-本模块负责重庆和平药房供应商体系（重庆医药流向系统）的协议登录、
-验证码双状态自动处理、五类型数据查询、分页汇聚和原始字段 Excel 落地。
-BladeX SSO（blade/doLogin，密码 DES-ECB 加密 key=test1234）+
-JWT Bearer 数据接口（/server/*HpTarget/page 系列分页查询）。
-按董事长给定凭据实测，服务端在验证码层通过后于凭据层拒绝
-（疑似账号连败锁定或密码变更），待凭据修正后全量通道即可生效。
+本模块负责重庆和平药房供应商体系（重药流向平台）的协议登录、
+五类型数据查询、分页汇聚和原始字段 Excel 落地。
+完整认证链路为四段：BladeX SSO 口令登录（doLogin，密码 DES-ECB
+加密 key=test1234，须携带 OAuth 客户端 Basic 凭证）→ 三方应用
+跳转地址解析（thirdLink，按上游客服 idmsyscode 取一次性 code）→
+数据平台令牌交换（getSXYUserLogin）→ 数据接口裸令牌直连
+（/server/*HpTarget/page 系列，Authorization 携带平台自签 JWT）。
 """
 
 # 导入 Base64 编解码模块。
@@ -25,17 +26,8 @@ import time
 # 导入随机数模块。
 import random
 
-# 导入表单编码函数。
-from urllib.parse import urlencode
-
 # 导入操作系统路径模块。
 import os
-
-# 导入时间模块。
-import time
-
-# 导入随机数模块。
-import random
 
 # 导入平台基类。
 from ddi_framework import BasePlatform
@@ -65,6 +57,15 @@ CAPTCHA_API_PATH = "/api/blade-auth/oauth/captcha"
 # 定义密码加密密钥常量（前端 cryptoKey）。
 DES_KEY = b"test1234"
 
+# 定义 OAuth 客户端编号常量（前端构建配置 VUE_APP_CLIENTID）。
+OAUTH_CLIENT_ID = "saber"
+
+# 定义 OAuth 客户端密钥常量（前端构建配置 VUE_APP_CLIENTIDSECRET）。
+OAUTH_CLIENT_SECRET = "saber_secret"
+
+# 定义上游客服三方应用编码常量（门户快速导航指向的数据平台应用）。
+IDMSYS_CODE = "10009"
+
 
 # 定义重庆医药流向系统协议适配器。
 class CqhpPlatform(BasePlatform):
@@ -93,8 +94,8 @@ class CqhpPlatform(BasePlatform):
         "纯销流向": "/server/retailHpTarget/page",
         "配送流向": "/server/headOfficeSalesHpTarget/page",
         "购进流向": "/server/headquartersWarehousingHpTarget/page",
-        "库存": "/server/factInventoryflowHp/page",
-        "报损流向": "/server/factIncomestatementPf/pageFactIncomestatementPf",
+        "库存": "/server/factInventoryflowHpTarget/page",
+        "报损流向": "/server/factIncomestatementHpTarget/page",
     }
 
     # 定义分页大小。
@@ -152,8 +153,11 @@ class CqhpPlatform(BasePlatform):
         # 初始化登录态标记。
         self.logged_in = False
 
-        # 初始化访问令牌。
+        # 初始化 SSO 访问令牌。
         self.access_token = ""
+
+        # 初始化数据平台访问令牌。
+        self.data_token = ""
 
         # 初始化数据平台用户编号。
         self.data_user_id = ""
@@ -227,6 +231,100 @@ class CqhpPlatform(BasePlatform):
         # 加密并输出 Base64 密文。
         return base64.b64encode(encryptor.update(padded) + encryptor.finalize()).decode("utf-8")
 
+    # 定义数据平台令牌获取方法。
+    def acquire_data_token(self):
+
+        """
+        依据 SSO 令牌换取重药流向平台数据访问令牌与用户标识。
+
+        链路为：三方应用跳转地址解析（thirdLink 按上游客服编码取一次性
+        code）→ 数据平台令牌交换（getSXYUserLogin）→ 数据平台用户信息
+        读取（getMyself），三个环节任一失败即抛出登录异常。
+
+        :return: None。
+        :rtype: None
+        """
+
+        # 构建基础加密请求头（前端拦截器对全部请求附加客户端 Basic 凭证）。
+        basic_credentials = base64.b64encode(f"{OAUTH_CLIENT_ID}:{OAUTH_CLIENT_SECRET}".encode("utf-8")).decode("utf-8")
+
+        # 组装 SSO 侧请求头。
+        sso_headers = {
+            "Accept": "application/json, text/plain, */*",
+            "Authorization": f"Basic {basic_credentials}",
+            "Blade-Auth": f"bearer {self.access_token}",
+            "Referer": self.login_page_url,
+            "Tenant-Id": "000000",
+            "User-Agent": self.http.user_agent(),
+        }
+
+        # 请求三方应用跳转地址。
+        link_url = self.sso_base_url + "/api/blade-system/application/thirdLink?" + urlencode({"idmsyscode": IDMSYS_CODE})
+
+        # 提交跳转地址解析请求。
+        link_result = self.http.request("GET", link_url, headers=sso_headers, timeout=60, allow_http_error=True)
+
+        # 解析跳转地址响应。
+        link_data = json.loads(link_result.body.decode("utf-8", errors="replace"))
+
+        # 判断跳转地址解析是否成功。
+        if int(link_data.get("code", -1)) != 200:
+
+            # 抛出跳转地址解析异常。
+            raise RuntimeError(f"{self.company_name} 重庆和平平台三方应用解析失败：{link_data.get('msg') or link_data.get('message')}")
+
+        # 从跳转地址截取一次性授权编码。
+        redirect_url = str(link_data.get("data") or "")
+
+        # 判断跳转地址是否携带授权编码。
+        if "code=" not in redirect_url:
+
+            # 抛出授权编码缺失异常。
+            raise RuntimeError(f"{self.company_name} 重庆和平平台跳转地址未携带授权编码：{redirect_url}")
+
+        # 提取一次性授权编码。
+        one_time_code = redirect_url.split("code=")[1].split("&")[0]
+
+        # 组装数据平台请求头（前端 axios 实例固定携带重定向声明头）。
+        data_headers = {
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            "Idm-Login-Redirect-Json": "1",
+            "Origin": self.data_base_url,
+            "Referer": self.data_base_url + "/",
+            "User-Agent": self.http.user_agent(),
+        }
+
+        # 提交数据平台令牌交换请求。
+        exchange_result = self.http.request("POST", self.data_base_url + "/server/getSXYUserLogin", headers=data_headers, data=json.dumps({"code": one_time_code}).encode("utf-8"), timeout=60, allow_http_error=True)
+
+        # 解析令牌交换响应。
+        exchange_data = json.loads(exchange_result.body.decode("utf-8", errors="replace"))
+
+        # 判断令牌交换是否成功（平台约定 code=200）。
+        if str(exchange_data.get("code")) != "200" or not exchange_data.get("data"):
+
+            # 抛出令牌交换异常。
+            raise RuntimeError(f"{self.company_name} 重庆和平平台数据令牌交换失败：{exchange_data.get('msg')}")
+
+        # 保存数据平台访问令牌。
+        self.data_token = str(exchange_data.get("data"))
+
+        # 读取数据平台用户信息。
+        myself_result = self.http.request("POST", self.data_base_url + "/server/users/getMyself", headers=self.build_data_headers(), data=b"{}", timeout=60, allow_http_error=True)
+
+        # 解析数据平台用户响应。
+        myself_data = json.loads(myself_result.body.decode("utf-8", errors="replace"))
+
+        # 判断用户信息读取是否成功。
+        if str(myself_data.get("code")) != "200":
+
+            # 抛出用户信息读取异常。
+            raise RuntimeError(f"{self.company_name} 重庆和平平台数据用户读取失败：{myself_data.get('msg') or myself_data.get('message')}")
+
+        # 保存数据平台用户编号。
+        self.data_user_id = str((myself_data.get("data") or {}).get("id") or "")
+
     # 定义平台登录方法。
     def login(self):
 
@@ -263,8 +361,11 @@ class CqhpPlatform(BasePlatform):
                 "idmsyscode": "",
             }
 
-            # 初始化登录请求头。
-            login_headers = {"Tenant-Id": login_params["tenantId"]}
+            # 初始化登录请求头（前端拦截器统一附加 OAuth 客户端 Basic 凭证与租户标识）。
+            basic_credentials = base64.b64encode(f"{OAUTH_CLIENT_ID}:{OAUTH_CLIENT_SECRET}".encode("utf-8")).decode("utf-8")
+
+            # 组装登录请求头。
+            login_headers = {"Authorization": f"Basic {basic_credentials}", "Tenant-Id": login_params["tenantId"]}
 
             # 判断是否进入验证码状态（首轮之后的重试均携带验证码）。
             if attempt_index > 1:
@@ -326,8 +427,8 @@ class CqhpPlatform(BasePlatform):
             # 解析登录响应。
             data = json.loads(result_text)
 
-            # 判断登录成功（平台约定 code=0）。
-            if int(data.get("code", -1)) == 0:
+            # 判断登录成功（平台 R 规范约定 code=200，兼容 0）。
+            if int(data.get("code", -1)) in (200, 0):
 
                 # 读取业务数据块。
                 login_data = data.get("data") or {}
@@ -341,8 +442,11 @@ class CqhpPlatform(BasePlatform):
                 # 标记登录态。
                 self.logged_in = True
 
+                # 获取数据平台访问令牌与用户标识。
+                self.acquire_data_token()
+
                 # 打印登录成功日志。
-                self.ph.success(self.ph.join(self.ph.kv("登录成功", f"第 {attempt_index} 次尝试", "green"), self.ph.kv("令牌前缀", self.access_token[:20], "cyan")))
+                self.ph.success(self.ph.join(self.ph.kv("登录成功", f"第 {attempt_index} 次尝试", "green"), self.ph.kv("数据用户", self.data_user_id or "-", "cyan")))
 
                 # 返回登录结果摘要。
                 return {"message": "登录成功", "attempts": attempt_index}
@@ -403,7 +507,7 @@ class CqhpPlatform(BasePlatform):
         if data_type == "报损流向":
 
             # 返回报损过滤模型。
-            return {"type": "报损", "startTime": start_date or "", "endDate": end_date or "", "userId": self.data_user_id}
+            return {"startTime": start_date or "", "endDate": end_date or "", "userId": self.data_user_id}
 
         # 库存类型返回空过滤模型（快照查询无日期条件）。
         return {"userId": self.data_user_id}
@@ -444,6 +548,12 @@ class CqhpPlatform(BasePlatform):
 
         # 解析查询响应。
         response_data = json.loads(result.body.decode("utf-8", errors="replace"))
+
+        # 判断响应是否为会话失效或业务拒绝（平台约定 code=200 为成功）。
+        if str(response_data.get("code")) not in ("200",):
+
+            # 抛出查询响应异常并携带平台消息。
+            raise RuntimeError(f"{data_type} 查询响应异常 code={response_data.get('code')} msg={response_data.get('msg') or response_data.get('message')}")
 
         # 返回原始响应。
         return response_data
@@ -603,11 +713,11 @@ class CqhpPlatform(BasePlatform):
         # 构建 Excel 输出路径。
         output_path = os.path.join(output_dir, file_name)
 
-        # 构建列映射（原名兜底）。
-        columns = {field: field for field in query_result["headers"]}
+        # 构建列映射（原始字段名同时作为标题与取值字段）。
+        columns = [(field, field) for field in query_result["headers"]]
 
         # 写入原始字段 Excel。
-        self.write_rows_to_excel(query_result["rows"], output_path, columns, data_type)
+        self.write_rows_to_excel(query_result["rows"], columns, output_path, data_type)
 
         # 打印 Excel 保存日志。
         self.ph.success(self.ph.kv(f"{data_type} Excel 已生成", self.ph.path(output_path), "green"))
@@ -646,9 +756,13 @@ class CqhpPlatform(BasePlatform):
         :rtype: dict
         """
 
-        # 返回浏览器页面请求头。
+        # 返回浏览器页面请求头（与登录同源的 OAuth 客户端 Basic 凭证一并携带）。
+        basic_credentials = base64.b64encode(f"{OAUTH_CLIENT_ID}:{OAUTH_CLIENT_SECRET}".encode("utf-8")).decode("utf-8")
+
+        # 组装页面请求头字典。
         return {
             "Accept": "application/json, text/plain, */*",
+            "Authorization": f"Basic {basic_credentials}",
             "Connection": "keep-alive",
             "Referer": self.login_page_url,
             "User-Agent": self.http.user_agent(),
@@ -664,13 +778,12 @@ class CqhpPlatform(BasePlatform):
         :rtype: dict
         """
 
-        # 返回数据查询请求头。
+        # 返回数据查询请求头（平台以裸令牌承载身份，无 Bearer 前缀）。
         return {
             "Accept": "application/json, text/plain, */*",
-            "Authorization": f"Bearer {self.access_token}",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
+            "Authorization": self.data_token,
             "Content-Type": "application/json",
+            "Idm-Login-Redirect-Json": "1",
             "Origin": self.data_base_url,
             "Referer": self.data_base_url + "/",
             "User-Agent": self.http.user_agent(),
