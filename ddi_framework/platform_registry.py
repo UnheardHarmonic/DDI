@@ -185,6 +185,9 @@ from ddi_framework.platforms.crpcg import CrpcgPlatform
 # 导入四川本草堂药业协同办公系统平台适配器。
 from ddi_framework.platforms.scbct import ScbctPlatform
 
+# 导入药德供应商流向平台适配器。
+from ddi_framework.platforms.yaoud import YaoudPlatform
+
 
 # 配置平台标识与平台适配器类的映射关系。
 PLATFORM_REGISTRY = {
@@ -252,6 +255,8 @@ PLATFORM_REGISTRY = {
     "crpcg": CrpcgPlatform,
     # 注册四川本草堂药业协同办公系统平台适配器。
     "scbct": ScbctPlatform,
+    # 注册药德供应商流向平台适配器。
+    "yaoud": YaoudPlatform,
 }
 
 
