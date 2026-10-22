@@ -71,6 +71,15 @@ from ddi_framework.platforms.finereport_common import FineReportTableParser
 # 定义一心堂 SRM 默认报表入口。
 HXYXT_DEFAULT_REPORT_ENTRY = "/WebReport/decision/v10/entry/access/old-platform-reportlet-entry-941"
 
+# 定义一心堂 SRM 默认库存月报报表入口。
+HXYXT_DEFAULT_STOCK_REPORT_ENTRY = "/WebReport/decision/v10/entry/access/old-platform-reportlet-entry-960"
+
+# 定义一心堂库存月报纸张宽度。
+HXYXT_STOCK_PAPER_WIDTH = 1704
+
+# 定义一心堂库存月报纸张高度。
+HXYXT_STOCK_PAPER_HEIGHT = 680
+
 
 # 定义一心堂配送流向表头。
 HXYXT_FLOW_HEADERS = ["序号", "公司", "分部", "过账日期", "商品编码", "商品名称", "收货方", "收货方名称", "数量", "说明"]
@@ -131,6 +140,9 @@ class HxyxtPlatform(BasePlatform):
 
         # 保存 FineReport 报表入口路径。
         self.report_entry_path = account.get("配送流向报表入口", HXYXT_DEFAULT_REPORT_ENTRY)
+
+        # 保存库存月报报表入口路径。
+        self.stock_report_entry_path = str(account.get("库存报表入口", HXYXT_DEFAULT_STOCK_REPORT_ENTRY))
 
         # 保存 FineReport 决策路径。
         self.decision_path = account.get("决策路径", "/decision")
@@ -203,6 +215,12 @@ class HxyxtPlatform(BasePlatform):
 
         # 初始化报表会话编号。
         self.report_session_id = ""
+
+        # 初始化库存月报入口 HTML。
+        self.stock_entry_html = ""
+
+        # 初始化库存月报会话编号。
+        self.stock_report_session_id = ""
 
         # 初始化登录状态。
         self.logged_in = False
@@ -904,6 +922,12 @@ class HxyxtPlatform(BasePlatform):
         # 确保当前会话已登录。
         self.ensure_login()
 
+        # 判断当前类型是否为库存月报。
+        if data_type == "库存":
+
+            # 执行库存月报查询并返回。
+            return self.query_stock_report_data(data_type)
+
         # 解析查询日期范围。
         start_date, end_date = self.resolve_query_dates(start_date, end_date)
 
@@ -928,6 +952,356 @@ class HxyxtPlatform(BasePlatform):
         # 返回查询结果。
         return {"headers": headers, "rows": rows, "start_date": start_date, "end_date": end_date}
 
+    # 定义库存月报分页读取方法。
+    def fetch_stock_page_rows(self):
+
+        """
+        读取 FineReport 商品库存月报全部分页数据。
+
+        库存月报网格首行为报表标题合并行，不能套用配送流向的
+        首行表头假设，改为按「月份+合计库存」特征定位表头行。
+
+        :return: 表头和数据行。
+        :rtype: tuple[list[str], list[dict]]
+        """
+
+        # 初始化当前页码。
+        page_number = 1
+
+        # 初始化总页数。
+        total_pages = 1
+
+        # 构建 FineReport 客户端标识。
+        client_id = self.build_client_id()
+
+        # 初始化合并表头。
+        merged_headers = []
+
+        # 初始化合并行数据。
+        merged_rows = []
+
+        # 循环读取全部分页。
+        while page_number <= total_pages:
+
+            # 读取当前页响应。
+            response_data = self.fetch_page_content(page_number, client_id)
+
+            # 读取当前页 HTML。
+            html_text = response_data.get("html", "")
+
+            # 解析当前总页数。
+            total_pages = max(total_pages, self.extract_total_pages(html_text))
+
+            # 解析当前页表格。
+            table_rows = self.parse_report_html(html_text)
+
+            # 定位库存月报表头行下标。
+            header_index = -1
+
+            # 遍历候选行定位表头。
+            for row_index, row in enumerate(table_rows):
+
+                # 判断当前行是否同时包含月份与合计库存列名。
+                if "月份" in row and "合计库存" in row:
+
+                    # 记录表头行下标。
+                    header_index = row_index
+
+                    # 结束定位遍历。
+                    break
+
+            # 判断表头行是否已定位。
+            if header_index >= 0:
+
+                # 提取非空表头单元格。
+                merged_headers = [cell for cell in table_rows[header_index] if str(cell).strip()]
+
+                # 遍历表头行之后的数据行。
+                for row in table_rows[header_index + 1:]:
+
+                    # 判断当前行是否为空行。
+                    if not any(str(cell).strip() for cell in row):
+
+                        # 跳过空行。
+                        continue
+
+                    # 判断当前行是否为说明行。
+                    if any("说明" in str(cell) for cell in row):
+
+                        # 跳过说明行。
+                        continue
+
+                    # 判断当前行序号是否为数字（过滤说明文字与隐藏合计行）。
+                    if not str(row[0] if row else "").strip().isdigit():
+
+                        # 跳过非数据行。
+                        continue
+
+                    # 按表头组装当前行字典。
+                    merged_rows.append({merged_headers[index]: (row[index] if index < len(row) else "") for index in range(len(merged_headers))})
+
+            # 打印分页读取日志。
+            self.ph.info(self.ph.join(self.ph.kv("当前页", f"{page_number}/{total_pages}", "cyan"), self.ph.kv("本页记录", len(merged_rows), "cyan")))
+
+            # 页码递增。
+            page_number += 1
+
+        # 返回表头和行数据。
+        return merged_headers, merged_rows
+
+    # 定义库存月报查询方法。
+    def query_stock_report_data(self, data_type):
+
+        """
+        查询一心堂 FineReport 商品库存月报数据。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :return: 查询结果、表头和月份。
+        :rtype: dict
+        """
+
+        # 初始化库存月报报表会话。
+        self.initialize_stock_report_session()
+
+        # 提取库存月报控件默认参数。
+        stock_parameters = self.extract_stock_parameters()
+
+        # 解析目标查询月份。
+        month_text = self.resolve_stock_month(None)
+
+        # 以目标月份覆盖控件默认月份。
+        stock_parameters["月份"] = month_text
+
+        # 提交库存月报报表参数。
+        self.submit_stock_parameters(stock_parameters)
+
+        # 保存原报表会话编号。
+        original_session_id = self.report_session_id
+
+        # 保存原纸张宽度。
+        original_paper_width = self.paper_width
+
+        # 保存原纸张高度。
+        original_paper_height = self.paper_height
+
+        # 切换为库存月报会话编号。
+        self.report_session_id = self.stock_report_session_id
+
+        # 切换为库存月报纸张宽度。
+        self.paper_width = HXYXT_STOCK_PAPER_WIDTH
+
+        # 切换为库存月报纸张高度。
+        self.paper_height = HXYXT_STOCK_PAPER_HEIGHT
+
+        try:
+
+            # 按整会话重建单元重试（提交后须立即取数，延迟即得壳页）。
+            for attempt_index in range(1, 4):
+
+                # 判断是否为重试轮次。
+                if attempt_index > 1:
+
+                    # 重建库存月报会话。
+                    self.initialize_stock_report_session()
+
+                    # 重新提取控件默认参数。
+                    stock_parameters = self.extract_stock_parameters()
+
+                    # 以目标月份覆盖控件默认月份。
+                    stock_parameters["月份"] = month_text
+
+                    # 重新提交库存月报报表参数。
+                    self.submit_stock_parameters(stock_parameters)
+
+                    # 会话切换到新库存月报会话。
+                    self.report_session_id = self.stock_report_session_id
+
+                # 立即读取库存月报全部分页行。
+                try:
+
+                    # 读取库存月报全部分页行。
+                    headers, rows = self.fetch_stock_page_rows()
+
+                # 捕获取数异常（非 JSON 响应等壳页形态）。
+                except (RuntimeError, ValueError):
+
+                    # 将表头置空触发整会话重建重试。
+                    headers, rows = [], []
+
+                # 判断表头是否已切换为库存月报表头（含月份与合计库存列）。
+                if "月份" in headers and "合计库存" in headers:
+
+                    # 表头正确时结束重试。
+                    break
+
+                # 打印渲染未就绪日志。
+                self.ph.warning(self.ph.kv(f"库存月报取数未就绪（第 {attempt_index} 次）", "重建会话重取", "yellow"))
+
+        # 恢复查询现场。
+        finally:
+
+            # 恢复原报表会话编号。
+            self.report_session_id = original_session_id
+
+            # 恢复原纸张宽度。
+            self.paper_width = original_paper_width
+
+            # 恢复原纸张高度。
+            self.paper_height = original_paper_height
+
+        # 打印查询完成日志。
+        self.ph.success(self.ph.join(self.ph.kv("商品库存月报解析完成", "FineReport", "green"), self.ph.kv("月份", month_text, "cyan"), self.ph.kv("记录数", f"{len(rows)} 条", "cyan"), self.ph.kv("字段数", len(headers), "cyan")))
+
+        # 返回查询结果。
+        return {"headers": headers, "rows": rows, "start_date": month_text, "end_date": month_text}
+
+    # 定义库存月报会话初始化方法。
+    def initialize_stock_report_session(self):
+
+        """
+        初始化 FineReport 商品库存月报报表会话。
+
+        :return: None。
+        :rtype: None
+        """
+
+        # 构建库存月报入口绝对地址。
+        entry_url = f"{self.site_root_url}{self.stock_report_entry_path}"
+
+        # 构建报表授权跳转参数。
+        query_text = urlencode({"token": self.access_token, "url": self.stock_report_entry_path})
+
+        # 构建报表授权跳转地址。
+        bridge_url = f"{self.fine_bridge_url}?{query_text}"
+
+        # 访问报表授权跳转地址。
+        self.get_bytes(bridge_url, headers=self.build_token_headers(self.login_page_url))
+
+        # 访问库存月报入口地址。
+        entry_body = self.get_bytes(entry_url, headers=self.build_token_headers(bridge_url))
+
+        # 解码库存月报入口 HTML。
+        self.stock_entry_html = entry_body.decode("utf-8", errors="replace")
+
+        # 提取库存月报会话编号。
+        self.stock_report_session_id = self.extract_report_session_id(self.stock_entry_html)
+
+        # 判断库存月报会话是否有效。
+        if not self.stock_report_session_id:
+
+            # 等待服务端会话就绪。
+            time.sleep(3)
+
+            # 重新访问库存月报入口地址。
+            entry_body = self.get_bytes(entry_url, headers=self.build_token_headers(bridge_url))
+
+            # 重新解码库存月报入口 HTML。
+            self.stock_entry_html = entry_body.decode("utf-8", errors="replace")
+
+            # 重新提取库存月报会话编号。
+            self.stock_report_session_id = self.extract_report_session_id(self.stock_entry_html)
+
+        # 判断库存月报会话是否有效。
+        if not self.stock_report_session_id:
+
+            # 抛出库存月报会话异常。
+            raise RuntimeError(f"{self.company_name} 商品库存月报会话获取失败")
+
+    # 定义库存月报参数提取方法。
+    def extract_stock_parameters(self):
+
+        """
+        从库存月报入口页提取控件默认参数。
+
+        :return: 库存月报控件参数字典。
+        :rtype: dict
+        """
+
+        # 构建控件名称清单。
+        widget_names = ["集团", "公司", "分部", "区域", "门店", "商品", "月份"]
+
+        # 初始化控件参数字典。
+        parameters = {}
+
+        # 遍历控件名称提取默认值。
+        for widget_name in widget_names:
+
+            # 提取当前控件默认值。
+            parameters[widget_name] = self.extract_widget_value(self.stock_entry_html, widget_name)
+
+        # 打印参数提取日志。
+        self.ph.info(self.ph.join(self.ph.kv("公司参数", parameters.get("公司") or "-", "cyan"), self.ph.kv("默认月份", parameters.get("月份") or "-", "cyan"), self.ph.kv("商品参数", (parameters.get("商品") or "-")[:40], "cyan")))
+
+        # 返回控件参数字典。
+        return parameters
+
+    # 定义库存月报参数提交方法。
+    def submit_stock_parameters(self, parameters):
+
+        """
+        提交 FineReport 商品库存月报报表参数。
+
+        :param parameters: 库存月报控件参数字典。
+        :type parameters: dict
+        :return: None。
+        :rtype: None
+        """
+
+        # 构建库存月报入口绝对地址。
+        entry_url = f"{self.site_root_url}{self.stock_report_entry_path}"
+
+        # 构建参数提交地址。
+        url = f"{self.site_root_url}{self.decision_path}/view/report?op=fr_dialog&cmd=parameters_d&sessionID={self.stock_report_session_id}"
+
+        # 构建表单请求体。
+        data = urlencode({"__parameters__": json.dumps(parameters, ensure_ascii=False, separators=(",", ":")), "_": str(int(time.time() * 1000))}).encode("utf-8")
+
+        # 构建表单请求头。
+        headers = self.build_form_headers(entry_url, session_id=self.stock_report_session_id)
+
+        # 发送参数提交请求。
+        response_body = self.request_bytes("POST", url, headers=headers, data=data)
+
+        # 解析响应数据。
+        response_data = json.loads(response_body.decode("utf-8", errors="replace"))
+
+        # 校验参数提交状态。
+        if str(response_data.get("status", "")).lower() != "success":
+
+            # 抛出参数提交异常。
+            raise RuntimeError(f"{self.company_name} 商品库存月报参数提交失败：{response_data}")
+
+        # 打印参数提交日志。
+        self.ph.info(self.ph.kv("库存月报参数", "提交成功", "green"))
+
+    # 定义库存月份解析方法。
+    def resolve_stock_month(self, end_date):
+
+        """
+        解析库存月报查询月份。
+
+        :param end_date: 查询结束日期。
+        :type end_date: str | None
+        :return: YYYYMM 形式月份。
+        :rtype: str
+        """
+
+        # 判断是否传入结束日期。
+        if end_date:
+
+            # 剥离日期分隔符。
+            digits = re.sub(r"\D", "", str(end_date))
+
+            # 判断日期数字是否足够。
+            if len(digits) >= 6:
+
+                # 返回年月文本。
+                return digits[:6]
+
+        # 返回当前月份。
+        return datetime.now().strftime("%Y%m")
+
     # 定义数据类型校验方法。
     def validate_data_type(self, data_type):
 
@@ -946,8 +1320,14 @@ class HxyxtPlatform(BasePlatform):
             # 配送流向直接返回。
             return
 
+        # 判断数据类型是否为库存月报。
+        if data_type == "库存":
+
+            # 库存月报直接返回。
+            return
+
         # 抛出不支持的数据类型异常。
-        raise ValueError(f"{self.company_name} 仅支持 配送流向，当前数据类型：{data_type}")
+        raise ValueError(f"{self.company_name} 仅支持 配送流向/库存，当前数据类型：{data_type}")
 
 
     # 定义日期范围解析方法。
