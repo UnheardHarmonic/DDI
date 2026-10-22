@@ -44,6 +44,15 @@ class YaoudPlatformTests(unittest.TestCase):
         "江苏舒福达医药有限公司": "1922",
         "江苏舒健大药房连锁有限公司": "1923",
         "江苏大德隆医药连锁有限公司": "1491",
+        "苏州市采芝灵药房连锁有限公司": "1650",
+    }
+
+    # 定义类级商业名称与登录账号映射引用。
+    EXPECTED_ACCOUNTS = {
+        "江苏舒福达医药有限公司": "15751345245",
+        "江苏舒健大药房连锁有限公司": "15751345245",
+        "江苏大德隆医药连锁有限公司": "15751345245",
+        "苏州市采芝灵药房连锁有限公司": "18936257595",
     }
 
     # 定义类级数据类型清单引用。
@@ -77,7 +86,7 @@ class YaoudPlatformTests(unittest.TestCase):
     def test_three_business_accounts_are_declared(self):
 
         """
-        验证三家联营商业账号声明平台归属、同套凭据与各自流向编号。
+        验证各家商业账号声明平台归属、凭据覆盖与各自流向编号。
 
         :return: None。
         :rtype: None
@@ -92,10 +101,10 @@ class YaoudPlatformTests(unittest.TestCase):
             # 断言平台归属为药德平台。
             self.assertEqual(account["平台"], "yaoud", company_name)
 
-            # 断言同套登录账号。
-            self.assertEqual(account["账号"], "15751345245", company_name)
+            # 断言登录账号与约定一致。
+            self.assertEqual(account["账号"], self.EXPECTED_ACCOUNTS[company_name], company_name)
 
-            # 断言同套登录密码。
+            # 断言登录密码与约定一致。
             self.assertEqual(account["密码"], "Huanuowei123", company_name)
 
             # 断言商业作用域流向编号。
