@@ -95,6 +95,42 @@ class GuodaPlatformTests(unittest.TestCase):
         # 断言维度取值。
         self.assertEqual(ACCOUNT_DIMENSIONS[self.ACCOUNT_KEY], {"大区": "西南华中", "省份": "广西壮族自治区", "负责人": "梁彬彬"})
 
+    # 定义上海复美账号声明完整性验证。
+    def test_shanghai_fumei_account_declaration_is_complete(self):
+
+        """
+        验证国大复美(上海)账号镜像广西条目且凭据留空。
+
+        :return: None。
+        :rtype: None
+        """
+
+        # 定义上海复美账号键。
+        fumei_key = "国药控股国大复美药业(上海)有限公司"
+
+        # 读取上海复美账号配置。
+        account = ACCOUNTS[fumei_key]
+
+        # 断言平台归属与站点地址与广西同源。
+        self.assertEqual(account["平台"], "guoda")
+        self.assertEqual(account["站点地址"], "https://gdedi.sinopharmgroup.net")
+
+        # 断言数据类型清单为三类型。
+        self.assertEqual(account["数据类型列表"], ["配送流向", "购进流向", "库存"])
+
+        # 断言公开模板凭据留空。
+        from pathlib import Path
+
+        # 读取公开模板源文件。
+        public_source = Path(__file__).resolve().parents[1].joinpath("ddi_framework", "account_config.py").read_text(encoding="utf-8-sig")
+
+        # 定位上海复美条目。
+        entry_start = public_source.index('"' + fumei_key + '": {')
+
+        # 断言凭据留空。
+        self.assertIn('"账号": ""', public_source[entry_start:public_source.index("},", entry_start)])
+        self.assertIn('"密码": ""', public_source[entry_start:public_source.index("},", entry_start)])
+
     # 定义注册表装载验证。
     def test_platform_registry_maps_guoda(self):
 
