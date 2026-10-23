@@ -188,6 +188,9 @@ from ddi_framework.platforms.scbct import ScbctPlatform
 # 导入药德供应商流向平台适配器。
 from ddi_framework.platforms.yaoud import YaoudPlatform
 
+# 导入华润德信行流向查询平台适配器。
+from ddi_framework.platforms.dexinxing import DexinxingPlatform
+
 
 # 配置平台标识与平台适配器类的映射关系。
 PLATFORM_REGISTRY = {
@@ -257,6 +260,8 @@ PLATFORM_REGISTRY = {
     "scbct": ScbctPlatform,
     # 注册药德供应商流向平台适配器。
     "yaoud": YaoudPlatform,
+    # 注册华润德信行流向查询平台适配器。
+    "dexinxing": DexinxingPlatform,
 }
 
 
