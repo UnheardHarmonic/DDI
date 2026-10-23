@@ -1381,7 +1381,7 @@ class HreportPlatform(BasePlatform):
         """
 
         # 判断数据类型是否已接入。
-        if data_type not in ["配送流向", "购进流向", "库存", "纯销流向", "连锁库存", "门店库存"]:
+        if data_type not in ["配送流向", "购进流向", "库存", "纯销流向", "连锁库存", "门店库存", "报损流向"]:
 
             # 抛出数据类型未接入异常。
             raise NotImplementedError(f"当前HReport暂未接入: {data_type}")
@@ -1398,8 +1398,8 @@ class HreportPlatform(BasePlatform):
         :rtype: bool
         """
 
-        # 返回流向类数据的日期区间要求。
-        return data_type in ["配送流向", "购进流向", "纯销流向"]
+        # 返回流向类与报损类的日期区间要求。
+        return data_type in ["配送流向", "购进流向", "纯销流向", "报损流向"]
 
     # 定义报表功能编号构建方法。
     def build_func_id(self, data_type):

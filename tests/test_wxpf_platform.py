@@ -149,7 +149,7 @@ class WanxinPlatformTests(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
 
             # 触发未接入类型异常。
-            platform.validate_data_type("报损流向")
+            platform.validate_data_type("批发流向")
 
     # 定义库存类日期区间要求验证。
     def test_inventory_types_do_not_require_date_range(self):
