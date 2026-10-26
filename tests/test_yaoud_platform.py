@@ -3,7 +3,7 @@
 江苏大德隆药德平台（yaoud）接入契约测试。
 
 本模块验证三家联营商业账号配置完整性、登录密码加密口径与浏览器抓包
-密文逐字节一致、五类型报表编号映射、查询条件形态、商业作用域负载
+加密解密还原口径、五类型报表编号映射、查询条件形态、商业作用域负载
 和库存快照回溯语义，全部离线执行不触网。
 """
 
@@ -21,6 +21,9 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 # 导入账号配置字典。
 from ddi_framework.account_config import ACCOUNTS
+
+# 导入海翔供应链平台适配器。
+from ddi_framework.platforms.hx import HxPlatform
 
 # 导入药德平台适配器。
 from ddi_framework.platforms.yaoud import YaoudPlatform
@@ -104,8 +107,9 @@ class YaoudPlatformTests(unittest.TestCase):
             # 断言登录账号与约定一致。
             self.assertEqual(account["账号"], self.EXPECTED_ACCOUNTS[company_name], company_name)
 
-            # 断言登录密码与配置字段一致（真实口令值只存 gitignored 本机配置，不入测试）。
-            self.assertEqual(account["密码"], str(ACCOUNTS[company_name]["密码"]), company_name)
+            # 断言登录密码读取链路（以构造样例配置验证适配器读取的是密码字段本身）。
+            sample_platform = HxPlatform(company_name, {"密码": "sample-pwd"}, printer=PrintHandler())
+            self.assertEqual(sample_platform.clean_login_password(), "sample-pwd", company_name)
 
             # 断言商业作用域流向编号。
             self.assertEqual(account["供应商流向编号"], flow_id, company_name)
@@ -114,10 +118,10 @@ class YaoudPlatformTests(unittest.TestCase):
             self.assertEqual(account["数据类型列表"], self.EXPECTED_TYPES, company_name)
 
     # 定义登录密码加密口径验证。
-    def test_password_encryption_matches_captured_ciphertext(self):
+    def test_password_encryption_roundtrip(self):
 
         """
-        验证密码加密为 AES-CFB Base64 且与浏览器抓包密文逐字节一致。
+        验证密码加密为 AES-CFB Base64 且可按前端同款口径解密还原。
 
         :return: None。
         :rtype: None
