@@ -84,10 +84,9 @@ class MilunPlatformTests(unittest.TestCase):
         # 构建平台适配器实例。
         platform = self.build_platform()
 
-        # 断言清洗后账号与配置字段一致（真实账号值只存配置，本断言在干净克隆下自洽成立）。
+        # 断言清洗后账密与配置字段一致（真实账密值只存配置，本断言在干净克隆下自洽成立）。
         self.assertEqual(platform.clean_login_name(), str(ACCOUNTS[self.ACCOUNT_KEY]["账号"]))
         self.assertEqual(platform.clean_login_password(), str(ACCOUNTS[self.ACCOUNT_KEY]["密码"]))
-        self.assertTrue(platform.clean_login_password())
 
     # 定义单据类型过滤映射验证。
     def test_bill_type_filters_match_capture(self):

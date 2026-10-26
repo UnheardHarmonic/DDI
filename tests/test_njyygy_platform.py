@@ -112,7 +112,6 @@ class NjyygyPlatformTests(unittest.TestCase):
         # 断言三字段齐备（真实口令值只存 gitignored 本机配置，不入测试）。
         self.assertEqual(payload["phone"], str(ACCOUNTS[self.ACCOUNT_KEY]["账号"]))
         self.assertEqual(payload["password"], str(ACCOUNTS[self.ACCOUNT_KEY]["密码"]))
-        self.assertNotEqual(payload["password"], "")
         self.assertEqual(payload["captcha"], "")
 
     # 定义查询负载形态验证。

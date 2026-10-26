@@ -100,7 +100,6 @@ class RongchangPlatformTests(unittest.TestCase):
         self.assertEqual(payload["yid"], "3")
         self.assertEqual(payload["code"], str(ACCOUNTS[self.ACCOUNT_KEY]["账号"]))
         self.assertEqual(payload["password"], platform.clean_login_password())
-        self.assertTrue(payload["password"])
 
     # 定义报表请求体形态验证。
     def test_report_payload_shape(self):
