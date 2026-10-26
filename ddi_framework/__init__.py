@@ -117,6 +117,10 @@ _LAZY_PLATFORM_EXPORTS = {
     "LsjndPlatform": ("lsjnd", "LsjndPlatform"),
     "CrpcgPlatform": ("crpcg", "CrpcgPlatform"),
     "ScbctPlatform": ("scbct", "ScbctPlatform"),
+    "YaoudPlatform": ("yaoud", "YaoudPlatform"),
+    "DexinxingPlatform": ("dexinxing", "DexinxingPlatform"),
+    "NjyygyPlatform": ("njyygy", "NjyygyPlatform"),
+    "JrtPlatform": ("jrt", "JrtPlatform"),
 }
 
 # 定义公共服务兼容懒加载映射。
