@@ -95,8 +95,8 @@ class BoaiPlatformTests(unittest.TestCase):
         # 构建登录请求体。
         payload = platform.build_login_payload()
 
-        # 断言账号与 MD5 密文密码形态（真实口令值只存 gitignored 本机配置，不入测试）。
-        self.assertEqual(payload["j_username"], "0088")
+        # 断言账号与 MD5 密文密码形态（真实账密值只存 gitignored 本机配置，不入测试）。
+        self.assertEqual(payload["j_username"], str(ACCOUNTS[self.ACCOUNT_KEY]["账号"]))
         self.assertRegex(payload["j_password"], r"^[0-9a-f]{32}$")
         self.assertNotEqual(payload["j_password"], platform.clean_login_password())
 

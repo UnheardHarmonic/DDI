@@ -84,8 +84,8 @@ class MilunPlatformTests(unittest.TestCase):
         # 构建平台适配器实例。
         platform = self.build_platform()
 
-        # 断言清洗后账号与台账一致（真实口令值只存 gitignored 本机配置，不入测试）。
-        self.assertEqual(platform.clean_login_name(), "13423692449")
+        # 断言清洗后账号与配置字段一致（真实账号值只存配置，本断言在干净克隆下自洽成立）。
+        self.assertEqual(platform.clean_login_name(), str(ACCOUNTS[self.ACCOUNT_KEY]["账号"]))
         self.assertEqual(platform.clean_login_password(), str(ACCOUNTS[self.ACCOUNT_KEY]["密码"]))
         self.assertTrue(platform.clean_login_password())
 

@@ -98,7 +98,7 @@ class RongchangPlatformTests(unittest.TestCase):
         self.assertEqual(payload["verflag"], "16")
         self.assertEqual(payload["accountname"], "福建荣昌药业")
         self.assertEqual(payload["yid"], "3")
-        self.assertEqual(payload["code"], "桂林华诺威")
+        self.assertEqual(payload["code"], str(ACCOUNTS[self.ACCOUNT_KEY]["账号"]))
         self.assertEqual(payload["password"], platform.clean_login_password())
         self.assertTrue(payload["password"])
 
