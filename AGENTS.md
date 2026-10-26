@@ -104,8 +104,13 @@
 - 构建命令（两条分别执行）：
   - `python -m PyInstaller packaging\DDI_V14.0_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_cli`
   - `python -m PyInstaller packaging\DDI_V14.0_GUI_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_gui`
-- 产物：`dist\DDI_V14.0_单文件版\` 内只有 `DDI_V14.0.exe` 与 `DDI_V14.0_GUI.exe` 两个文件。
+- 产物：`dist\DDI_V14.0_单文件版\` 内只有 `DDI_V14.0.exe` 与 `DDI_V14.0_GUI.exe` 两个文件，**交付物就是两个裸 exe，不带任何配置文件**（构建归拢后与验证后都要复查目录内无 config/runtime/log 等任何副产物）。
 - 单文件版特性：每次启动自解压约 10 秒属正常现象；配置、授权、运行产物从 exe 所在目录读取，`license.json` 放 exe 旁 `config\` 内即可生效。
+- 单文件版固定验证流程（2026-10-26 发布实证，固定执行防错）：
+  1. 终端 exe `--help` 实跑（首次运行需等自解压）；
+  2. 真实登录验证：临时放置 `license.json` 于 exe 旁 `config\`，跑一家商业 `--action login` 实证内嵌账密生效，验证后立即删除 `license.json` 与全部运行副产物；
+  3. GUI exe 窗口验证：**单文件 GUI 的真窗口在自解压派生的子进程上，Start-Process 拿到的壳进程 MainWindowTitle 恒为空**——必须按窗口标题全局枚举（等待 30 秒以上，轮询 `Get-Process | Where MainWindowTitle -like '*DDI*'`），验证后连壳带子进程一并清理；
+  4. 复查交付目录只含两个 exe 后再压缩或发送。
 
 ### 全量账密内嵌策略（2026-10-09 明令，固定执行）
 
