@@ -11,9 +11,6 @@ import json
 # 导入操作系统路径模块。
 import os
 
-# 导入正则表达式模块。
-import re
-
 # 导入时间模块。
 import time
 
@@ -735,77 +732,6 @@ class JswmPlatform(FineReportPlatformBase):
 
         # 返回基于会话号拼接的固定客户端标识。
         return f"ddi-{session_id}"
-
-    def extract_total_pages(self, html_text):
-        """
-        从页面 HTML 中提取总页数。
-
-        :param html_text: 页面 HTML 文本。
-        :type html_text: str
-        :return: 总页数。
-        :rtype: int
-        """
-
-        # 查找总页数字段。
-        matched = re.search(r"reportTotalPage=(\d+)", str(html_text or ""))
-
-        # 判断总页数字段是否存在。
-        if not matched:
-
-            # 不存在时返回默认单页值。
-            return 1
-
-        # 返回解析后的总页数。
-        return int(matched.group(1))
-
-    def merge_page_rows(self, merged_headers, merged_rows, page_headers, page_rows):
-        """
-        合并分页返回的表头与数据行。
-
-        :param merged_headers: 已合并表头。
-        :type merged_headers: list[str]
-        :param merged_rows: 已合并数据行。
-        :type merged_rows: list[dict]
-        :param page_headers: 当前页表头。
-        :type page_headers: list[str]
-        :param page_rows: 当前页数据行。
-        :type page_rows: list[dict]
-        :return: 合并后的表头与数据行。
-        :rtype: tuple[list[str], list[dict]]
-        """
-
-        # 初始化当前合并表头副本。
-        current_headers = list(merged_headers)
-
-        # 遍历当前页表头。
-        for header_name in page_headers:
-
-            # 判断当前字段是否已存在于合并表头。
-            if header_name in current_headers:
-
-                # 已存在时进入下一项表头。
-                continue
-
-            # 将新字段追加到合并表头末尾。
-            current_headers.append(header_name)
-
-        # 初始化合并后数据行集合。
-        normalized_rows = []
-
-        # 遍历历史数据行。
-        for row in merged_rows:
-
-            # 按最新合并表头重建历史数据行。
-            normalized_rows.append({header_name: row.get(header_name, "") for header_name in current_headers})
-
-        # 遍历当前页数据行。
-        for row in page_rows:
-
-            # 按最新合并表头重建当前页数据行。
-            normalized_rows.append({header_name: row.get(header_name, "") for header_name in current_headers})
-
-        # 返回合并后的表头与数据行。
-        return current_headers, normalized_rows
 
     def validate_result_date_range(self, data_type, rows, start_date, end_date):
         """

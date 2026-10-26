@@ -194,6 +194,9 @@ from ddi_framework.platforms.dexinxing import DexinxingPlatform
 # 导入南京医药国药 DDI 数据直连系统平台适配器。
 from ddi_framework.platforms.njyygy import NjyygyPlatform
 
+# 导入成都聚仁堂 FineReport 数据报表系统平台适配器。
+from ddi_framework.platforms.jrt import JrtPlatform
+
 
 # 配置平台标识与平台适配器类的映射关系。
 PLATFORM_REGISTRY = {
@@ -267,6 +270,8 @@ PLATFORM_REGISTRY = {
     "dexinxing": DexinxingPlatform,
     # 注册南京医药国药 DDI 数据直连系统平台适配器。
     "njyygy": NjyygyPlatform,
+    # 注册成都聚仁堂 FineReport 数据报表系统平台适配器。
+    "jrt": JrtPlatform,
 }
 
 
