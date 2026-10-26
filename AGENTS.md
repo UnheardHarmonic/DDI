@@ -118,6 +118,7 @@
 - spec 的 `excludes` 必须包含 `torch`、`torchvision`、`tensorboard`、`huggingface_hub`：这些是被依赖分析误收集的大体积无关依赖（约 366MB×2），DDI 代码与验证码识别链路（ddddocr/onnxruntime）完全不使用。
 - 构建前置验证：`run_ddi.py --help`、全部源码 `python -m py_compile`、`python -X utf8 -m unittest discover -s tests -p "test_*.py"` 全绿。
 - 构建后验证：终端 exe `--help` 实跑；GUI exe 拉起进程确认存活即可；运行 exe 会在分发目录触发目录自愈（生成 runtime 树和 `===== 说明 =====.md` 空壳目录），交付前必须删除这些运行副产物，只保留产品文件。
+- 构建后体积与排除项核对：分发目录 1.8G 上下为正常体量；必须实测确认 `torch`/`torchvision`/`tensorboard`/`huggingface_hub` 零命中（约 730M 无关依赖，V14.0 发布时曾发现 onedir 双 spec 的 excludes 为空数组导致漏排，与 onefile spec 漂移，发布前逐 spec 核对）。
 - 分发目录红线扫描：不得包含导出 Excel、运行日志、Cookie、`license.json`、`license_tool.py`、私钥与公钥（`.pem`）、抓包材料和个人参考材料；`account_config_local.py` 按全量账密内嵌策略允许存在于构建配置与运行时资源中；`certifi` 的 CA 证书属运行必需，不算违规。
 - 版本升级时必须同步重命名四个 spec 文件并更新其内部 `name` 字段、`build_release.ps1` 路径、本节文件名和 `packaging\README.md`。
 - 构建日志写入 `runtime\work\validation`，验证完成后随其他可再生材料一并清理。

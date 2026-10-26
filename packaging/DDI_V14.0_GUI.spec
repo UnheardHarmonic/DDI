@@ -79,7 +79,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=["torch", "torchvision", "tensorboard", "huggingface_hub"],
     noarchive=False,
     optimize=0,
 )
