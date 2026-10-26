@@ -121,6 +121,7 @@ _LAZY_PLATFORM_EXPORTS = {
     "DexinxingPlatform": ("dexinxing", "DexinxingPlatform"),
     "NjyygyPlatform": ("njyygy", "NjyygyPlatform"),
     "JrtPlatform": ("jrt", "JrtPlatform"),
+    "MilunPlatform": ("milun", "MilunPlatform"),
 }
 
 # 定义公共服务兼容懒加载映射。

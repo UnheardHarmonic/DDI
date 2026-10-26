@@ -197,6 +197,9 @@ from ddi_framework.platforms.njyygy import NjyygyPlatform
 # 导入成都聚仁堂 FineReport 数据报表系统平台适配器。
 from ddi_framework.platforms.jrt import JrtPlatform
 
+# 导入米伦厂商合作平台适配器。
+from ddi_framework.platforms.milun import MilunPlatform
+
 
 # 配置平台标识与平台适配器类的映射关系。
 PLATFORM_REGISTRY = {
@@ -272,6 +275,8 @@ PLATFORM_REGISTRY = {
     "njyygy": NjyygyPlatform,
     # 注册成都聚仁堂 FineReport 数据报表系统平台适配器。
     "jrt": JrtPlatform,
+    # 注册米伦厂商合作平台适配器。
+    "milun": MilunPlatform,
 }
 
 

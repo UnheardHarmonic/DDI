@@ -362,7 +362,16 @@ class HxPlatform(BasePlatform):
         """
 
         # 返回报表业务参数。
-        return {"begindate": start_date, "enddate": end_date, "pid": "0", "pdim": "", "cid": 0, "y_id": int(self.account_id), "supplytype": "0", "supplyid": 0, "classid": "", "customclassid": ""}
+        params = {"begindate": start_date, "enddate": end_date, "pid": "0", "pdim": "", "cid": 0, "y_id": int(self.account_id), "supplytype": "0", "supplyid": 0, "classid": "", "customclassid": ""}
+
+        # 门店版部署对 supplyid 字段返回空响应，按账号配置剔除。
+        if not bool(self.account.get("携带supplyid", True)):
+
+            # 移除 supplyid 字段。
+            params.pop("supplyid", None)
+
+        # 返回报表业务参数。
+        return params
 
     # 定义数据类型页签编号构建方法。
     def build_tab_id(self, data_type):
@@ -376,8 +385,11 @@ class HxPlatform(BasePlatform):
         :rtype: str
         """
 
-        # 定义数据类型与页签编号映射。
+        # 定义数据类型与页签编号默认映射（蜂鸟系采购/销售/库存顺序）。
         mapping = {"购进流向": "1", "配送流向": "2", "库存": "3"}
+
+        # 门店版等部署的页签顺序可能不同，按账号配置覆盖。
+        mapping.update({name: str(tab_id) for name, tab_id in (self.account.get("页签映射") or {}).items()})
 
         # 返回当前数据类型页签编号。
         return mapping[data_type]
