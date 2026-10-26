@@ -23,11 +23,11 @@ class HxyxtPlatformConfigTests(unittest.TestCase):
     :rtype: HxyxtPlatformConfigTests
     """
 
-    # 定义类级商业名称与子账号映射引用。
+    # 定义类级商业名称与子账号编号映射引用（子账号口令只存 gitignored 本机配置，不入测试）。
     EXPECTED_SUB_ACCOUNTS = {
-        "重庆鸿翔一心堂药业有限公司": ("1004", "abc123456"),
-        "天津鸿翔一心堂医药连锁有限公司": ("1003", "123456"),
-        "上海鸿翔一心堂药业有限公司": ("1007", "123456"),
+        "重庆鸿翔一心堂药业有限公司": "1004",
+        "天津鸿翔一心堂医药连锁有限公司": "1003",
+        "上海鸿翔一心堂药业有限公司": "1007",
     }
 
     # 定义账号声明完整性验证。
@@ -41,7 +41,7 @@ class HxyxtPlatformConfigTests(unittest.TestCase):
         """
 
         # 遍历预期商业清单。
-        for company_name, (sub_account, password) in self.EXPECTED_SUB_ACCOUNTS.items():
+        for company_name, sub_account in self.EXPECTED_SUB_ACCOUNTS.items():
 
             # 读取商业账号配置。
             account = ACCOUNTS[company_name]

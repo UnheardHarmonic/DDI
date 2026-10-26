@@ -225,8 +225,8 @@ class CqtjgPlatform(BasePlatform):
         # 保存登录角色类型。
         self.role_type = str(account.get("角色类型编码", "6"))
 
-        # 保存登录密码前缀。
-        self.password_prefix = account.get("密码前缀", "*&^%Ybghs154.")
+        # 保存登录密码前缀（等效凭据成分，只允许来自本机私有配置）。
+        self.password_prefix = str(account.get("密码前缀", ""))
 
         # 保存分页大小。
         self.page_size = int(account.get("分页大小", 300))

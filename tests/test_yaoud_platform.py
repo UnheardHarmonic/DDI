@@ -104,8 +104,8 @@ class YaoudPlatformTests(unittest.TestCase):
             # 断言登录账号与约定一致。
             self.assertEqual(account["账号"], self.EXPECTED_ACCOUNTS[company_name], company_name)
 
-            # 断言登录密码与约定一致。
-            self.assertEqual(account["密码"], "Huanuowei123", company_name)
+            # 断言登录密码与配置字段一致（真实口令值只存 gitignored 本机配置，不入测试）。
+            self.assertEqual(account["密码"], str(ACCOUNTS[company_name]["密码"]), company_name)
 
             # 断言商业作用域流向编号。
             self.assertEqual(account["供应商流向编号"], flow_id, company_name)
@@ -126,23 +126,20 @@ class YaoudPlatformTests(unittest.TestCase):
         # 构建平台适配器实例。
         platform = self.build_platform()
 
-        # 以抓包当次提交的十三位明文执行加密。
-        captured_cipher_text = platform.encrypt_password("Huanuowei123]")
+        # 以虚拟样例明文执行加密（真实口令值只存 gitignored 本机配置，不入测试）。
+        sample_plain_text = "sample@2026"
 
-        # 断言密文与浏览器抓包表单密文一致。
-        self.assertEqual(captured_cipher_text, "c5DUrD1txXyUrJMKkA==")
-
-        # 以真实十二位明文执行加密并按前端同款口径解密还原。
+        # 断言密文为 Base64 形态且按前端同款口径解密还原一致。
         key_bytes = b"PITWDjRNQCQ4xUev"
 
         # 构建 AES-CFB-128 解密器。
         decryptor = Cipher(algorithms.AES(key_bytes), modes.CFB(key_bytes)).decryptor()
 
-        # 解码并还原真实明文。
-        plain = decryptor.update(base64.b64decode(platform.encrypt_password("Huanuowei123"))) + decryptor.finalize()
+        # 解码并还原虚拟样例明文。
+        plain = decryptor.update(base64.b64decode(platform.encrypt_password(sample_plain_text))) + decryptor.finalize()
 
-        # 断言解密结果与原始明文一致。
-        self.assertEqual(plain.decode("latin-1"), "Huanuowei123")
+        # 断言解密结果与虚拟样例明文一致。
+        self.assertEqual(plain.decode("latin-1"), sample_plain_text)
 
     # 定义五类型报表编号映射验证。
     def test_report_ids_match_capture(self):
