@@ -2,7 +2,7 @@
 """
 江苏大德隆药德平台（yaoud）接入契约测试。
 
-本模块验证三家联营商业账号配置完整性、登录密码加密口径与浏览器抓包
+本模块验证四家联营商业账号配置完整性、登录密码加密口径与浏览器抓包
 加密解密还原口径、五类型报表编号映射、查询条件形态、商业作用域负载
 和库存快照回溯语义，全部离线执行不触网。
 """
@@ -85,8 +85,8 @@ class YaoudPlatformTests(unittest.TestCase):
         # 读取商业账号配置并构建适配器。
         return YaoudPlatform(company_name, ACCOUNTS[company_name], printer=PrintHandler())
 
-    # 定义三家商业账号声明完整性验证。
-    def test_three_business_accounts_are_declared(self):
+    # 定义四家商业账号声明完整性验证。
+    def test_four_business_accounts_are_declared(self):
 
         """
         验证各家商业账号声明平台归属、凭据覆盖与各自流向编号。
