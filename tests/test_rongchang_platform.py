@@ -94,12 +94,13 @@ class RongchangPlatformTests(unittest.TestCase):
         # 构建登录请求体。
         payload = platform.build_login_payload()
 
-        # 断言门店版编码与账套要素。
+        # 断言门店版编码与账套要素（真实口令值只存 gitignored 本机配置，不入测试）。
         self.assertEqual(payload["verflag"], "16")
         self.assertEqual(payload["accountname"], "福建荣昌药业")
         self.assertEqual(payload["yid"], "3")
         self.assertEqual(payload["code"], "桂林华诺威")
-        self.assertEqual(payload["password"], "gl12345678")
+        self.assertEqual(payload["password"], platform.clean_login_password())
+        self.assertTrue(payload["password"])
 
     # 定义报表请求体形态验证。
     def test_report_payload_shape(self):

@@ -109,9 +109,10 @@ class NjyygyPlatformTests(unittest.TestCase):
         # 构建登录请求体。
         payload = platform.build_login_payload()
 
-        # 断言三字段齐备且值正确。
+        # 断言三字段齐备（真实口令值只存 gitignored 本机配置，不入测试）。
         self.assertEqual(payload["phone"], "15044239286")
-        self.assertEqual(payload["password"], "Qqwer1234..**")
+        self.assertEqual(payload["password"], str(ACCOUNTS[self.ACCOUNT_KEY]["密码"]))
+        self.assertNotEqual(payload["password"], "")
         self.assertEqual(payload["captcha"], "")
 
     # 定义查询负载形态验证。

@@ -84,9 +84,10 @@ class MilunPlatformTests(unittest.TestCase):
         # 构建平台适配器实例。
         platform = self.build_platform()
 
-        # 断言清洗后账号密码与台账一致。
+        # 断言清洗后账号与台账一致（真实口令值只存 gitignored 本机配置，不入测试）。
         self.assertEqual(platform.clean_login_name(), "13423692449")
-        self.assertEqual(platform.clean_login_password(), "xecXi9-vawpaf-dikcec")
+        self.assertEqual(platform.clean_login_password(), str(ACCOUNTS[self.ACCOUNT_KEY]["密码"]))
+        self.assertTrue(platform.clean_login_password())
 
     # 定义单据类型过滤映射验证。
     def test_bill_type_filters_match_capture(self):
