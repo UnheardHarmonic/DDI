@@ -178,5 +178,5 @@
 
 - 本项目唯一远程仓库：GitHub 私有仓库 UnheardHarmonic/DDI（master 分支，2026-10-16 由废仓 shybyf-ddi-releases 改名承接，旧 SHYBYF 历史已按董事长口径清退）。
 - 换设备或收工前 push，开工前 pull；接手他机产出先核对最新提交与启动更新日志的版本现状。
-- 零凭据入库铁律：`account_config_local.py`（真实账号密码）、`config/license.json`、`config/account_runtime.json`、`runtime/`、`dist/`、`.venv/` 一律由 .gitignore 排除，推送前必须复扫历史与暂存区零泄漏。
+- 私有仓全量随仓策略（2026-10-26 董事长明令，取代原「零凭据入库铁律」）：GitHub 私有仓是任意设备接手的唯一接入点，`account_config_local.py`（全量商业账密）、`config/license.json`、`config/account_runtime.json`、`config/license_outputs/`、`ddi_license_private_key.pem`、`ddi_license_public_key.pem` 全部随仓推送，换设备拉取即可签发与使用；`runtime/`、`dist/`、`.venv/` 仍由 .gitignore 排除（可再生体积物）。分发包零凭据口径不变：打成分发给同事的目录仍不得含签发材料与运行产物（见打包发布规则红线扫描）。
 - 本机远程地址内嵌按仓隔离的细粒度令牌（与公司仓同一管理口径）；令牌轮换时同步更新 remote URL 与记忆台账。

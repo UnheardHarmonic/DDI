@@ -1,0 +1,17 @@
+{
+  "license_id": "DDI-20260805-LOCAL",
+  "enabled": true,
+  "expire_date": "2026-9-10",
+  "allowed_versions": [
+    "DDI_V4.0"
+  ],
+  "allowed_machine_codes": [
+    "38B3DD6E9037A095E6AE08D6EE3433BE269AD6DB4F44BDBE3E585DB2BF707969"
+  ],
+  "allowed_machines": [],
+  "allowed_users": [],
+  "allow_all_responsible_persons": true,
+  "allowed_responsible_persons": [],
+  "issued_at": "2026-08-05",
+  "signature": "sa6Jyaya34sN7H2R3tXn5La9HuFBCi+2jUYm2BSWCoHKhHmt5x6p1Ui+elIIo6UiPxq+UrwR95EKzQurAdmNBA=="
+}

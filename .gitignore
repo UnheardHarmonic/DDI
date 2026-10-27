@@ -30,19 +30,13 @@ reports/
 /packaging/release/
 
 # Local generated authorization outputs
-config/license_outputs/
 
-# Local machine-specific runtime license
-license.json
 
 # Local source-development authorization bound to one machine
 config/local_development.json
 
 # Local commercial credentials and their deployment-specific derivatives.
 # These files contain account passwords, session material, or authorization data.
-ddi_framework/account_config_local.py
-config/account_runtime.json
-config/license.json
 *.env
 .env.*
 
