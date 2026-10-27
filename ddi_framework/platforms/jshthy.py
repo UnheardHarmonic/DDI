@@ -8,11 +8,17 @@
 # 导入 Base64 编解码模块。
 import base64
 
+# 导入 JSON 编解码模块。
+import json
+
 # 导入操作系统路径模块。
 import os
 
 # 导入时间模块。
 import time
+
+# 导入日期时间对象。
+from datetime import datetime, timezone
 
 # 导入 RSA 非对称填充配置。
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -32,6 +38,22 @@ from ddi_framework import PrintHandler
 
 # 定义 RSA 密文标记默认值。
 DEFAULT_RSA_FLAG = "``RSA``"
+
+# 定义数据类型与 SRM 网关方法映射。
+SRM_GATEWAY_METHODS = {
+    "购进流向": "ykcloud.supinterface.oaSrmPurchase.queryPage",
+    "配送流向": "ykcloud.supinterface.oaSrmDist.queryPage",
+    "纯销流向": "ykcloud.supinterface.oaSrmSale.queryPage",
+    "库存": "ykcloud.supinterface.oaSrmStock.queryPage",
+}
+
+# 定义数据类型与查询日期参数前缀映射（库存为快照无日期）。
+SRM_DATE_PARAM_PREFIX = {
+    "购进流向": "rec_date",
+    "配送流向": "ship_date",
+    "纯销流向": "order_date",
+    "库存": "",
+}
 
 
 class JshthyPlatform(BasePlatform):
@@ -89,6 +111,12 @@ class JshthyPlatform(BasePlatform):
         # 保存登录类型编号。
         self.login_type = str(account.get("登录类型", "2"))
 
+        # 保存 SRM 数据网关地址。
+        self.srm_gateway_url = account.get("数据网关地址", "https://xb-test.myquanyi.com:8080/portal-prod/gateway-manager/xjl-job")
+
+        # 保存 SRM 应用编号。
+        self.srm_app_key = str(account.get("应用编号", "18000"))
+
         # 初始化协议请求客户端。
         self.http = ProtocolHttpClient(self.api_base_url)
 
@@ -113,7 +141,7 @@ class JshthyPlatform(BasePlatform):
         """
 
         # 打印登录阶段标题。
-        self.ph.section("江苏恒泰华洋登录", self.ph.kv("商业", self.company_name, "cyan"))
+        self.ph.section("全亿健康 SRM 登录", self.ph.kv("商业", self.company_name, "cyan"))
 
         # 打印首页初始化日志。
         self.ph.info(self.ph.join(self.ph.kv("访问登录页", self.login_page_url, "cyan"), self.ph.kv("账号", self.clean_login_name(), "cyan")))
@@ -146,7 +174,7 @@ class JshthyPlatform(BasePlatform):
             error_message = response_data.get("msg") or response_data.get("message") or response_data
 
             # 抛出登录失败异常。
-            raise RuntimeError(f"江苏恒泰华洋登录失败：{error_message}")
+            raise RuntimeError(f"{self.company_name} 登录失败：{error_message}")
 
         # 标记登录状态。
         self.logged_in = True
@@ -312,6 +340,103 @@ class JshthyPlatform(BasePlatform):
         # 返回原始密码字符串。
         return str(self.account.get("密码", ""))
 
+    def validate_data_type(self, data_type):
+        """
+        校验数据类型是否已接入。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :return: None。
+        :rtype: None
+        """
+
+        # 判断数据类型是否存在网关方法映射。
+        if data_type not in SRM_GATEWAY_METHODS:
+
+            # 抛出数据类型未接入异常。
+            raise ValueError(f"全亿健康 SRM 平台暂未接入数据类型：{data_type}")
+
+    def resolve_srm_session(self):
+        """
+        读取 SRM 网关会话凭证。
+
+        :return: 会话凭证文本。
+        :rtype: str
+        """
+
+        # 读取账号配置中的会话凭证。
+        return str(self.account.get("SRM会话凭证", "")).strip()
+
+    def build_gateway_url(self, data_type, params, page_number):
+        """
+        构建 SRM 网关查询地址。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param params: 网关业务参数。
+        :type params: dict
+        :param page_number: 当前页码。
+        :type page_number: int
+        :return: 网关查询地址。
+        :rtype: str
+        """
+
+        # 导入 URL 编码函数。
+        from urllib.parse import quote
+
+        # 拼接业务参数 JSON 的 URL 编码文本。
+        encoded_params = quote(json.dumps(params, ensure_ascii=False, separators=(",", ":")), safe="")
+
+        # 返回拼接后的网关查询地址。
+        return f"{self.srm_gateway_url}?method={SRM_GATEWAY_METHODS[data_type]}&app_key={self.srm_app_key}&params={encoded_params}"
+
+    def build_gateway_params(self, data_type, start_date, end_date, page_number):
+        """
+        构建 SRM 网关业务参数。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param start_date: 查询开始日期。
+        :type start_date: str
+        :param end_date: 查询结束日期。
+        :type end_date: str
+        :param page_number: 当前页码。
+        :type page_number: int
+        :return: 网关业务参数。
+        :rtype: dict
+        """
+
+        # 读取公司编码。
+        company_code = str(self.account.get("公司编码", "")).strip()
+
+        # 构建公共业务参数。
+        params = {"tenant_num_id": str(self.account.get("租户编号", "18")), "data_sign": 0, "user_id": str(self.login_result.get("userid", "")), "cort_num_id": company_code, "item_num_id": "", "page_num": page_number, "page_size": int(self.account.get("分页大小", 10))}
+
+        # 读取当前类型的日期参数前缀。
+        date_prefix = SRM_DATE_PARAM_PREFIX.get(data_type, "")
+
+        # 判断当前类型是否携带日期区间。
+        if date_prefix:
+
+            # 写入开始与结束毫秒时间戳。
+            params[f"{date_prefix}_begin"] = self.to_epoch_millis(start_date)
+            params[f"{date_prefix}_end"] = self.to_epoch_millis(end_date)
+
+        # 返回业务参数。
+        return params
+
+    def to_epoch_millis(self, date_text):
+        """
+        将北京时区日期文本换算为毫秒时间戳。
+
+        :param date_text: 日期文本。
+        :type date_text: str
+        :return: 毫秒时间戳。
+        :rtype: int
+        """
+
+        # 按站点前端口径以 UTC 零点解析日期并返回毫秒时间戳。
+        return int(datetime.strptime(date_text, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp() * 1000)
 
     def query_flow(self, data_type, start_date=None, end_date=None):
         """
@@ -323,31 +448,15 @@ class JshthyPlatform(BasePlatform):
         :type start_date: str | None
         :param end_date: 查询结束日期。
         :type end_date: str | None
-        :return: 查询结果。
+        :return: 查询结果行。
         :rtype: list[dict]
         """
 
-        # 抛出数据接口待接入异常。
-        raise NotImplementedError(f"江苏恒泰华洋暂未接入{data_type}查询接口")
+        # 查询 SRM 网关指定类型完整数据。
+        query_result = self.query_srm_data(data_type, start_date, end_date)
 
-    def export_flow(self, data_type, start_date=None, end_date=None, output_dir=None):
-        """
-        导出指定类型业务数据。
-
-        :param data_type: 数据类型名称。
-        :type data_type: str
-        :param start_date: 查询开始日期。
-        :type start_date: str | None
-        :param end_date: 查询结束日期。
-        :type end_date: str | None
-        :param output_dir: 输出目录。
-        :type output_dir: str | None
-        :return: 导出结果。
-        :rtype: dict
-        """
-
-        # 抛出数据接口待接入异常。
-        raise NotImplementedError(f"江苏恒泰华洋暂未接入{data_type}导出接口")
+        # 返回查询结果行。
+        return query_result["rows"]
 
     def query_flow_to_excel(self, data_type, start_date=None, end_date=None, output_dir=None):
         """
@@ -365,5 +474,229 @@ class JshthyPlatform(BasePlatform):
         :rtype: str
         """
 
-        # 抛出数据接口待接入异常。
-        raise NotImplementedError(f"江苏恒泰华洋暂未接入{data_type}Excel生成接口")
+        # 查询 SRM 网关指定类型完整数据。
+        query_result = self.query_srm_data(data_type, start_date, end_date)
+
+        # 使用当前工作目录作为默认输出目录。
+        output_dir = output_dir or os.getcwd()
+
+        # 创建输出目录。
+        os.makedirs(output_dir, exist_ok=True)
+
+        # 构建输出文件名。
+        file_name = self.build_output_file_name(data_type, query_result["start_date"], query_result["end_date"])
+
+        # 构建输出文件路径。
+        output_path = os.path.join(output_dir, file_name)
+
+        # 写入 Excel 文件。
+        self.write_rows_to_excel(query_result["rows"], query_result["headers"], output_path, data_type)
+
+        # 打印 Excel 保存日志。
+        self.ph.success(self.ph.join(self.ph.kv(f"{data_type} Excel已生成", self.ph.path(output_path), "green"), self.ph.kv("记录数", f"{len(query_result['rows'])} 条", "cyan"), self.ph.kv("字段数", len(query_result["headers"]), "cyan")))
+
+        # 返回 Excel 文件路径。
+        return output_path
+
+    def query_srm_data(self, data_type, start_date, end_date):
+        """
+        查询 SRM 网关指定类型全部分页数据。
+
+        :param data_type: 数据类型名称。
+        :type data_type: str
+        :param start_date: 查询开始日期。
+        :type start_date: str
+        :param end_date: 查询结束日期。
+        :type end_date: str
+        :return: 查询结果、表头和日期范围。
+        :rtype: dict
+        """
+
+        # 导入 JSON 编解码模块。
+        import json
+
+        # 校验数据类型。
+        self.validate_data_type(data_type)
+
+        # 确保当前会话已经登录。
+        self.ensure_login()
+
+        # 缺省日期回退为当天。
+        start_date = start_date or datetime.now().strftime("%Y-%m-%d")
+        end_date = end_date or datetime.now().strftime("%Y-%m-%d")
+
+        # 打印查询阶段标题。
+        self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date, "cyan"), self.ph.kv("结束日期", end_date, "cyan")))
+
+        # 读取 SRM 会话凭证。
+        session_credential = self.resolve_srm_session()
+
+        # 判断会话凭证是否已配置。
+        if not session_credential:
+
+            # 抛出会话凭证缺失异常。
+            raise RuntimeError(f"{self.company_name} 缺少 SRM会话凭证 配置（门户登录后的 Authorization 值，待与平台方核对获取方式）")
+
+        # 初始化合并数据行集合。
+        merged_rows = []
+
+        # 初始化合并表头集合。
+        merged_headers = []
+
+        # 初始化总页数。
+        total_pages = 1
+
+        # 初始化当前页码。
+        page_number = 1
+
+        # 循环读取全部分页。
+        while page_number <= total_pages:
+
+            # 构建当前页业务参数。
+            params = self.build_gateway_params(data_type, start_date, end_date, page_number)
+
+            # 构建当前页查询地址。
+            url = self.build_gateway_url(data_type, params, page_number)
+
+            # 构建请求头。
+            headers = {"Authorization": session_credential, "Referer": self.srm_gateway_url.rsplit("/gateway-manager", 1)[0] + "/"}
+
+            # 发送网关查询请求。
+            result = self.http.request("GET", url, headers=headers, timeout=180, allow_http_error=True)
+
+            # 解析网关响应。
+            response_data = self.http.decode_json(result)
+
+            # 读取数据块字段。
+            data_block = response_data.get("data")
+
+            # 判断数据块是否为列表形态。
+            rows = data_block if isinstance(data_block, list) else []
+
+            # 合并当前页数据行。
+            merged_rows.extend(row for row in rows if isinstance(row, dict))
+
+            # 按行序合并动态表头。
+            merged_headers = self.merge_srm_headers(merged_headers, rows)
+
+            # 打印分页读取日志。
+            self.ph.info(self.ph.join(self.ph.kv("当前页", page_number, "cyan"), self.ph.kv("本页记录", len(rows), "cyan"), self.ph.kv("累计记录", len(merged_rows), "cyan")))
+
+            # 判断当前页是否不足一页以终止读取。
+            if len(rows) < int(self.account.get("分页大小", 10)):
+
+                # 结束分页循环。
+                break
+
+            # 页码递增。
+            page_number += 1
+
+        # 返回查询结果。
+        return {"headers": merged_headers, "rows": merged_rows, "start_date": start_date, "end_date": end_date}
+
+    def merge_srm_headers(self, merged_headers, rows):
+        """
+        按行序合并动态表头。
+
+        :param merged_headers: 已合并表头。
+        :type merged_headers: list[str]
+        :param rows: 当前页数据行。
+        :type rows: list[dict]
+        :return: 合并后的表头。
+        :rtype: list[str]
+        """
+
+        # 初始化当前合并表头副本。
+        current_headers = list(merged_headers)
+
+        # 遍历当前页数据行。
+        for row in rows:
+
+            # 遍历当前行字段名称。
+            for header_name in row.keys():
+
+                # 判断字段名称是否已存在。
+                if header_name in current_headers:
+
+                    # 进入下一字段。
+                    continue
+
+                # 追加新字段。
+                current_headers.append(header_name)
+
+        # 返回合并后的表头。
+        return current_headers
+
+    def write_rows_to_excel(self, rows, headers, output_path, sheet_name):
+
+        """
+        写入查询结果到 Excel。
+
+        :param rows: 查询结果数据行。
+        :type rows: list[dict]
+        :param headers: 表头列表。
+        :type headers: list[str]
+        :param output_path: 输出文件路径。
+        :type output_path: str
+        :param sheet_name: 工作表名称。
+        :type sheet_name: str
+        :return: None。
+        :rtype: None
+        """
+
+        # 导入 Excel 工作簿对象。
+        from openpyxl import Workbook
+
+        # 导入列宽工具函数。
+        from openpyxl.utils import get_column_letter
+
+        # 创建 Excel 工作簿。
+        workbook = Workbook(write_only=False)
+
+        # 读取默认工作表。
+        worksheet = workbook.active
+
+        # 设置工作表名称。
+        worksheet.title = sheet_name[:31]
+
+        # 写入表头行。
+        worksheet.append(headers)
+
+        # 遍历查询结果并写入数据行。
+        for row in rows:
+
+            # 按表头顺序组装一行数据。
+            worksheet.append([row.get(header_name, "") if isinstance(row, dict) else "" for header_name in headers])
+
+        # 遍历所有导出列设置列宽。
+        for column_index, header_name in enumerate(headers, start=1):
+
+            # 读取当前列字母。
+            column_letter = get_column_letter(column_index)
+
+            # 设置当前列宽。
+            worksheet.column_dimensions[column_letter].width = max(12, min(34, len(str(header_name)) + 10))
+
+        # 冻结表头行。
+        worksheet.freeze_panes = "A2"
+
+        # 启用自动筛选。
+        worksheet.auto_filter.ref = worksheet.dimensions
+
+        # 创建输出目录。
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+
+        # 删除已有同名文件。
+        self.remove_existing_file(output_path)
+
+        # 保存 Excel 文件。
+        try:
+
+            # 将工作簿保存到目标路径。
+            workbook.save(output_path)
+
+        # 处理文件被占用导致的保存异常。
+        except PermissionError as error:
+
+            # 抛出带业务路径的文件占用异常。
+            raise PermissionError(f"无法覆盖文件，请先关闭已打开的 Excel 文件：{output_path}") from error
