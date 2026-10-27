@@ -1,0 +1,15 @@
+# DDI Web 服务运行依赖。
+# DDI 公共协议层和 Excel 导出依赖。
+colorama==0.4.6
+cryptography==46.0.5
+ddddocr==1.5.6
+numpy==1.26.4
+opencv-python-headless==4.10.0.84
+Pillow==12.2.0
+beautifulsoup4==4.14.3
+xlrd==2.0.2
+pywin32==311; platform_system == "Windows"
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+python-multipart==0.0.20
+openpyxl==3.1.5

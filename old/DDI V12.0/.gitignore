@@ -1,0 +1,51 @@
+# Python bytecode cache
+__pycache__/
+.venv/
+*.py[cod]
+
+# PyInstaller build outputs
+build/
+dist/
+
+# DDI runtime outputs
+runtime/
+reports/
+
+# Project-root generated artifacts must be redirected into runtime/.
+/.playwright-cli/
+/js_reverse_cache/
+/tmp/
+/tmp_*/
+/verification/
+/downloads/
+/logs/
+/output/
+/outputs/
+/log_*/
+/out_*/
+/tmp_*.png
+/outputs_*.json
+
+# Generated colleague distribution package.
+/packaging/release/
+
+# Local generated authorization outputs
+config/license_outputs/
+
+# Local machine-specific runtime license
+license.json
+
+# Local source-development authorization bound to one machine
+config/local_development.json
+
+# Local commercial credentials and their deployment-specific derivatives.
+# These files contain account passwords, session material, or authorization data.
+ddi_framework/account_config_local.py
+config/account_runtime.json
+config/license.json
+*.env
+.env.*
+
+# Cloudflare tunnel identities and deployment access tokens.
+.cloudflared/
+cloudflared/config.yml

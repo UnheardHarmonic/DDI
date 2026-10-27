@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>DDI · 任务台</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <p class="wordmark">DDI / DATA DELIVERY INTERFACE</p>
+      <h1>任务台</h1>
+      <p class="intro">已通过组织身份验证。提交后，任务将在受控部署电脑中执行。</p>
+    </header>
+
+    <section class="workspace" aria-labelledby="task-title">
+      <form id="task-form">
+        <div class="section-heading">
+          <h2 id="task-title">新建查询</h2>
+          <p>选择商业、日期和数据类型。文件由管理员按既定目录统一交付。</p>
+        </div>
+
+        <fieldset>
+          <legend>商业</legend>
+          <div id="company-list" class="company-list" aria-live="polite">正在读取可用商业…</div>
+        </fieldset>
+
+        <div class="grid">
+          <label>数据类型<select id="data-type" required></select></label>
+          <label>并发商业数<input id="max-workers" type="number" min="1" max="12" value="1" required></label>
+          <label>开始日期<input id="start-date" type="date" required></label>
+          <label>结束日期<input id="end-date" type="date" required></label>
+        </div>
+
+        <label class="toggle"><input id="copy-excel" type="checkbox" checked> 同时生成复制用 Excel</label>
+        <button id="submit-button" type="submit">提交任务</button>
+      </form>
+
+      <aside class="status-panel" aria-live="polite">
+        <p class="status-label">执行状态</p>
+        <h2 id="status-title">等待提交</h2>
+        <p id="status-message">任务将由部署电脑中的公共 DDI 服务执行。</p>
+        <pre id="status-result" hidden></pre>
+        <div id="download-list" hidden></div>
+      </aside>
+    </section>
+  </main>
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+:root {
+  color: #f2eee7;
+  background: #151617;
+  font-family: "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: radial-gradient(circle at 88% 8%, #315154 0, transparent 28rem), #151617;
+}
+
+.shell { width: min(1100px, calc(100% - 40px)); margin: 0 auto; padding: 76px 0; }
+.masthead { max-width: 700px; padding-bottom: 56px; border-bottom: 1px solid #455052; }
+.wordmark { margin: 0 0 20px; color: #b3e0da; font: 600 .74rem/1.2 Consolas, monospace; letter-spacing: .15em; }
+h1 { margin: 0; font-size: clamp(3rem, 9vw, 6rem); line-height: .95; letter-spacing: -.07em; }
+.intro { max-width: 46ch; margin: 22px 0 0; color: #bdc5c2; font-size: 1.06rem; line-height: 1.75; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .75fr); gap: 28px; padding-top: 42px; }
+form, .status-panel { padding: 30px; background: #1d2020; border: 1px solid #455052; }
+.section-heading { margin-bottom: 32px; }
+h2 { margin: 0; font-size: 1.55rem; letter-spacing: -.03em; }
+.section-heading p, #status-message { color: #afbbb7; line-height: 1.7; }
+fieldset { margin: 0; padding: 0 0 26px; border: 0; }
+legend { padding: 0 0 12px; font-weight: 700; }
+.company-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid #3d4747; }
+.company-choice { display: flex; gap: 9px; align-items: center; padding: 12px 8px; border-bottom: 1px solid #3d4747; color: #dfe5e2; font-size: .92rem; }
+.company-choice small { color: #81a9a5; font-family: Consolas, monospace; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+label { display: grid; gap: 8px; color: #d4dcda; font-size: .9rem; }
+select, input { width: 100%; min-height: 44px; padding: 0 10px; border: 1px solid #566360; border-radius: 0; color: #f2eee7; background: #121414; font: inherit; }
+.toggle { display: flex; align-items: center; margin: 24px 0; }
+.toggle input { width: auto; min-height: auto; accent-color: #a5e1d7; }
+button { width: 100%; min-height: 52px; border: 0; color: #0e1413; background: #a5e1d7; font: 700 1rem/1 "Microsoft YaHei UI", sans-serif; cursor: pointer; transition: background .2s ease, transform .2s ease; }
+button:hover { background: #d4fff8; transform: translateY(-2px); }
+button:disabled { color: #7d8885; background: #384440; cursor: wait; transform: none; }
+.status-panel { align-self: start; border-top: 4px solid #a5e1d7; }
+.status-label { margin: 0 0 18px; color: #89b3ad; font: 600 .73rem/1 Consolas, monospace; letter-spacing: .12em; }
+#status-result { overflow: auto; padding: 12px; color: #d4e4e1; background: #111313; font-size: .78rem; line-height: 1.6; white-space: pre-wrap; }
+#download-list { display: grid; gap: 10px; margin-top: 22px; }
+.download-link { display: block; padding: 12px; color: #101615; background: #b7eae2; font-weight: 700; text-decoration: none; }
+.download-link:hover { background: #dcfff9; }
+@media (max-width: 760px) { .shell { width: min(100% - 28px, 650px); padding: 40px 0; } .workspace { grid-template-columns: 1fr; } .company-list, .grid { grid-template-columns: 1fr; } form, .status-panel { padding: 22px; } }

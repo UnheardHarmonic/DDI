@@ -1,0 +1,38 @@
+# Python bytecode cache
+__pycache__/
+*.py[cod]
+
+# PyInstaller build outputs
+build/
+dist/
+
+# DDI runtime outputs
+runtime/
+reports/
+
+# Project-root generated artifacts must be redirected into runtime/.
+/.playwright-cli/
+/js_reverse_cache/
+/tmp/
+/tmp_*/
+/verification/
+/downloads/
+/logs/
+/output/
+/outputs/
+/log_*/
+/out_*/
+/tmp_*.png
+/outputs_*.json
+
+# Generated colleague distribution package.
+/packaging/release/
+
+# Local generated authorization outputs
+config/license_outputs/
+
+# Local machine-specific runtime license
+license.json
+
+# Local source-development authorization bound to one machine
+config/local_development.json

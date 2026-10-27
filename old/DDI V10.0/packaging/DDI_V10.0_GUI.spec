@@ -1,0 +1,115 @@
+# -*- mode: python ; coding: utf-8 -*-
+"""
+DDI V10.0 图形界面 PyInstaller 构建配置。
+
+本 spec 仅用于打包独立 GUI 入口，不会被终端入口导入。
+"""
+
+# 导入路径对象。
+from pathlib import Path
+
+# 导入 PyInstaller 依赖收集函数。
+from PyInstaller.utils.hooks import collect_all
+
+
+# 解析 DDI 项目根目录。
+project_root = Path(SPECPATH).resolve().parent
+
+# 初始化数据文件集合。
+datas = []
+
+# 初始化二进制文件集合。
+binaries = []
+
+# 初始化隐藏导入集合。
+hiddenimports = ["colorama", "bs4", "win32com.client"]
+
+# 收集 PySide6 Qt Quick 运行资源。
+tmp_ret = collect_all("PySide6")
+
+# 追加 PySide6 Qt Quick 数据文件。
+datas += tmp_ret[0]
+
+# 追加 PySide6 Qt Quick 二进制文件。
+binaries += tmp_ret[1]
+
+# 追加 PySide6 Qt Quick 隐藏导入。
+hiddenimports += tmp_ret[2]
+
+# 收集 QML 界面资源。
+datas.append((str(project_root / "gui_qml"), "gui_qml"))
+
+# 收集 DDI 既有运行依赖。
+tmp_ret = collect_all("ddddocr")
+
+# 追加 DDI 既有运行数据文件。
+datas += tmp_ret[0]
+
+# 追加 DDI 既有运行二进制文件。
+binaries += tmp_ret[1]
+
+# 追加 DDI 既有运行隐藏导入。
+hiddenimports += tmp_ret[2]
+
+# 收集 Excel 与平台适配运行依赖。
+for package_name in ["onnxruntime", "cv2", "numpy", "PIL", "openpyxl", "xlrd", "olefile", "cryptography"]:
+
+    # 收集当前运行依赖。
+    tmp_ret = collect_all(package_name)
+
+    # 追加当前运行依赖数据文件。
+    datas += tmp_ret[0]
+
+    # 追加当前运行依赖二进制文件。
+    binaries += tmp_ret[1]
+
+    # 追加当前运行依赖隐藏导入。
+    hiddenimports += tmp_ret[2]
+
+# 分析 GUI 入口依赖。
+a = Analysis(
+    [str(project_root / "run_ddi_gui.py")],
+    pathex=[str(project_root)],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+
+# 构建 Python 模块归档。
+pyz = PYZ(a.pure)
+
+# 构建无控制台 GUI 可执行文件。
+exe = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name="DDI_V10.0_GUI",
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
+
+# 构建 GUI 独立 onedir 目录。
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name="DDI_V10.0_GUI_BUILD",
+)

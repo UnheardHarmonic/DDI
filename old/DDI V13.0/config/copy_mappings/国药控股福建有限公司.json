@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "company_name": "国药控股福建有限公司",
+  "enabled": true,
+  "data_types": {
+    "配送流向": {
+      "fields": {
+        "流向日期": {"operation": "direct", "source": "开单日期"},
+        "买方-原始简称": {"operation": "direct", "source": "购货单位"},
+        "品种": {"operation": "direct", "source": "商品名称"},
+        "规格": {"operation": "direct", "source": "规格"},
+        "销售数量（盒）": {"operation": "direct", "source": "数量", "transforms": ["to_number"]},
+        "供货单价": {"operation": "direct", "source": "价格", "transforms": ["to_number"]},
+        "批号": {"operation": "direct", "source": "批号"}
+      },
+      "rules": []
+    }
+  }
+}
