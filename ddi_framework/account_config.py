@@ -1338,6 +1338,7 @@ ACCOUNTS = {
         "密码": "",
         "登录页": "http://gys.tianjiyy.com:9090/Account/Login",
         "接口根地址": "http://gys.tianjiyy.com:9090",
+        "请求超时秒数": 300,
         "工作区编号": "0O0LNH1Y131",
         "页面映射": {
             "配送流向": {"页面名称": "配送-天济", "报表编号": "0O0LO3T0QP5"},
