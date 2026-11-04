@@ -200,6 +200,9 @@ from ddi_framework.platforms.jrt import JrtPlatform
 # 导入米伦厂商合作平台适配器。
 from ddi_framework.platforms.milun import MilunPlatform
 
+# 导入天济协同平台适配器。
+from ddi_framework.platforms.tianji import TianjiPlatform
+
 
 # 配置平台标识与平台适配器类的映射关系。
 PLATFORM_REGISTRY = {
@@ -277,6 +280,8 @@ PLATFORM_REGISTRY = {
     "jrt": JrtPlatform,
     # 注册米伦厂商合作平台适配器。
     "milun": MilunPlatform,
+    # 注册天济协同平台适配器。
+    "tianji": TianjiPlatform,
 }
 
 
