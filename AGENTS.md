@@ -179,4 +179,11 @@
 - 本项目唯一远程仓库：GitHub 私有仓库 UnheardHarmonic/DDI（master 分支，2026-10-16 由废仓 shybyf-ddi-releases 改名承接，旧 SHYBYF 历史已按董事长口径清退）。
 - 换设备或收工前 push，开工前 pull；接手他机产出先核对最新提交与启动更新日志的版本现状。
 - 私有仓全量随仓策略（2026-10-26 董事长明令，取代原「零凭据入库铁律」）：GitHub 私有仓是任意设备接手的唯一接入点，`account_config_local.py`（全量商业账密）、`config/license.json`、`config/account_runtime.json`、`config/license_outputs/`、`ddi_license_private_key.pem`、`ddi_license_public_key.pem` 全部随仓推送，换设备拉取即可签发与使用；`runtime/`、`dist/`、`.venv/` 仍由 .gitignore 排除（可再生体积物）。分发包零凭据口径不变：打成分发给同事的目录仍不得含签发材料与运行产物（见打包发布规则红线扫描）。
+- **全量可运行上传铁律（2026-11-06 董事长发火明令，两次事故倒逼）**：上传必须保证任意一台电脑 clone 后全量可运行，不能缺这个少那个。历史事故即反面清单：事故一漏传商业账号密码，董事长在家里无法运行；事故二漏传签发公私钥与生成令牌的工具，导致无法生成令牌。**push 前必须逐项自查五件套**：
+  1. 全量账密：`account_config_local.py` 与 `account_config.py` 的商业清单一比一对齐，逐家核账号密码非空（显式免密码商业须带「允许空密码」声明标志）；
+  2. 本机授权：`config/license.json` 在库；
+  3. 签发密钥：`ddi_license_private_key.pem` 与 `ddi_license_public_key.pem` 在库；
+  4. 签发工具：`license_tool.py` 在库；
+  5. 运行配置：`config/account_runtime.json` 在库。
+  自查通过才允许 push；新接入商业或改动签发材料的提交，提交说明中注明家数核对结论。
 - 本机远程地址内嵌按仓隔离的细粒度令牌（与公司仓同一管理口径）；令牌轮换时同步更新 remote URL 与记忆台账。
