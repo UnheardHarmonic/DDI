@@ -2,7 +2,7 @@
 """
 心链-SRM（hxyxt）平台商业配置契约测试。
 
-本模块验证重庆/天津/上海三家鸿翔系商业的账号配置镜像关系、
+本模块验证重庆/天津/上海/海南四家鸿翔系商业的账号配置镜像关系、
 子账号区分、类型清单与公开模板凭据留空口径，全部离线执行不触网。
 """
 
@@ -28,13 +28,17 @@ class HxyxtPlatformConfigTests(unittest.TestCase):
         "重庆鸿翔一心堂药业有限公司": "1004",
         "天津鸿翔一心堂医药连锁有限公司": "1003",
         "上海鸿翔一心堂药业有限公司": "1007",
+        "海南鸿翔一心堂医药连锁有限公司": "1003",
     }
 
     # 定义账号声明完整性验证。
     def test_hongxiang_accounts_mirror_and_differ_by_sub_account(self):
 
         """
-        验证三家鸿翔商业同主账号镜像端点且以子账号区分。
+        验证四家鸿翔商业同站镜像端点且以账号三元组区分。
+
+        重庆/天津/上海共用同一主账号、以子账号区分；
+        海南为独立主账号，仅与天津共用子账号 1003。
 
         :return: None。
         :rtype: None
@@ -84,11 +88,36 @@ class HxyxtPlatformConfigTests(unittest.TestCase):
         # 断言操作员名称为商业全名。
         self.assertEqual(account["操作员名称"], "上海鸿翔一心堂药业有限公司")
 
+    # 定义海南商业专属声明验证。
+    def test_hainan_account_declaration(self):
+
+        """
+        验证海南鸿翔条目的公司代码名称与类型清单。
+
+        :return: None。
+        :rtype: None
+        """
+
+        # 读取海南鸿翔账号配置。
+        account = ACCOUNTS["海南鸿翔一心堂医药连锁有限公司"]
+
+        # 断言公司代码名称与登录实提一致。
+        self.assertEqual(account["公司代码名称"], "海南公司")
+
+        # 断言站点根地址与天津/上海同站。
+        self.assertEqual(account["站点根地址"], "https://yxt-srm.hxyxt.com")
+
+        # 断言数据类型清单为配送加库存两类型。
+        self.assertEqual(account["数据类型列表"], ["配送流向", "库存"])
+
+        # 断言操作员名称为商业全名。
+        self.assertEqual(account["操作员名称"], "海南鸿翔一心堂医药连锁有限公司")
+
     # 定义公开模板凭据留空验证。
     def test_public_template_credentials_are_blank(self):
 
         """
-        验证沪津两商业在公开模板中凭据留空（真实值仅在本地私有文件）。
+        验证津琼沪三商业在公开模板中凭据留空（真实值仅在本地私有文件）。
 
         :return: None。
         :rtype: None
@@ -100,8 +129,8 @@ class HxyxtPlatformConfigTests(unittest.TestCase):
         # 读取公开模板源文件原文。
         public_source = Path(__file__).resolve().parents[1].joinpath("ddi_framework", "account_config.py").read_text(encoding="utf-8-sig")
 
-        # 遍历沪津两商业。
-        for company_name in ("天津鸿翔一心堂医药连锁有限公司", "上海鸿翔一心堂药业有限公司"):
+        # 遍历沪津琼三商业。
+        for company_name in ("天津鸿翔一心堂医药连锁有限公司", "上海鸿翔一心堂药业有限公司", "海南鸿翔一心堂医药连锁有限公司"):
 
             # 定位商业条目文本。
             entry_start = public_source.index('"' + company_name + '": {')
