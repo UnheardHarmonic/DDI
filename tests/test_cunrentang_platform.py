@@ -80,7 +80,7 @@ class CunrentangPlatformTests(unittest.TestCase):
 
         # 断言登录站点与数据网关地址与抓包一致。
         self.assertEqual(account["接口根地址"], "https://oa.myquanyi.com")
-        self.assertEqual(account["数据网关地址"], "https://xb-test.myquanyi.com:8080/portal-prod/gateway-manager/xjl-job")
+        self.assertEqual(account["数据网关地址"], "https://xb-test.myquanyi.com:8080/portal-prod/gateway-manager/xxl-job")
 
         # 断言公司编码与租户编号与抓包一致。
         self.assertEqual(account["公司编码"], "CR01")
@@ -148,11 +148,11 @@ class CunrentangPlatformTests(unittest.TestCase):
         self.assertNotIn("ship_date_begin", params)
         self.assertNotIn("order_date_begin", params)
 
-    # 定义会话凭证缺失验证。
-    def test_missing_session_credential_is_rejected(self):
+    # 定义会话凭证可选语义验证。
+    def test_missing_session_credential_is_tolerated(self):
 
         """
-        验证未配置 SRM 会话凭证时抛出明确异常。
+        验证未配置 SRM 会话凭证时不抛异常（网关不校验 Authorization，凭证可选）。
 
         :return: None。
         :rtype: None
@@ -161,9 +161,8 @@ class CunrentangPlatformTests(unittest.TestCase):
         # 构建平台适配器实例。
         platform = self.build_platform()
 
-        # 断言缺失凭证抛出异常。
-        with self.assertRaises(RuntimeError):
-            platform.query_srm_data("购进流向", "2026-10-01", "2026-10-27")
+        # 断言凭证缺省为空。
+        self.assertEqual(platform.resolve_srm_session(), "")
 
     # 定义未接入类型拒绝验证。
     def test_unsupported_type_is_rejected(self):

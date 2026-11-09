@@ -112,7 +112,7 @@ class JshthyPlatform(BasePlatform):
         self.login_type = str(account.get("登录类型", "2"))
 
         # 保存 SRM 数据网关地址。
-        self.srm_gateway_url = account.get("数据网关地址", "https://xb-test.myquanyi.com:8080/portal-prod/gateway-manager/xjl-job")
+        self.srm_gateway_url = account.get("数据网关地址", "https://xb-test.myquanyi.com:8080/portal-prod/gateway-manager/xxl-job")
 
         # 保存 SRM 应用编号。
         self.srm_app_key = str(account.get("应用编号", "18000"))
@@ -528,14 +528,8 @@ class JshthyPlatform(BasePlatform):
         # 打印查询阶段标题。
         self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date, "cyan"), self.ph.kv("结束日期", end_date, "cyan")))
 
-        # 读取 SRM 会话凭证。
+        # 读取 SRM 会话凭证（可选：网关当前不校验 Authorization，浏览器同款请求仅带占位头即可出数）。
         session_credential = self.resolve_srm_session()
-
-        # 判断会话凭证是否已配置。
-        if not session_credential:
-
-            # 抛出会话凭证缺失异常。
-            raise RuntimeError(f"{self.company_name} 缺少 SRM会话凭证 配置（门户登录后的 Authorization 值，待与平台方核对获取方式）")
 
         # 初始化合并数据行集合。
         merged_rows = []
@@ -543,14 +537,13 @@ class JshthyPlatform(BasePlatform):
         # 初始化合并表头集合。
         merged_headers = []
 
-        # 初始化总页数。
-        total_pages = 1
+        # 初始化总页数（按分页大小与实际行数动态翻页，服务端返回 page_count 时同步刷新）。
 
         # 初始化当前页码。
         page_number = 1
 
         # 循环读取全部分页。
-        while page_number <= total_pages:
+        while True:
 
             # 构建当前页业务参数。
             params = self.build_gateway_params(data_type, start_date, end_date, page_number)
@@ -558,8 +551,14 @@ class JshthyPlatform(BasePlatform):
             # 构建当前页查询地址。
             url = self.build_gateway_url(data_type, params, page_number)
 
-            # 构建请求头。
-            headers = {"Authorization": session_credential, "Referer": self.srm_gateway_url.rsplit("/gateway-manager", 1)[0] + "/"}
+            # 构建请求头（对齐浏览器网关调用形态；凭证存在时才携带 Authorization）。
+            headers = {"Accept": "application/json, text/plain, */*", "X-Custom-Header": "foobar", "Referer": self.srm_gateway_url.rsplit("/gateway-manager", 1)[0] + "/"}
+
+            # 凭证存在则追加 Authorization。
+            if session_credential:
+
+                # 写入凭证。
+                headers["Authorization"] = session_credential
 
             # 发送网关查询请求。
             result = self.http.request("GET", url, headers=headers, timeout=180, allow_http_error=True)
@@ -567,8 +566,11 @@ class JshthyPlatform(BasePlatform):
             # 解析网关响应。
             response_data = self.http.decode_json(result)
 
+            # 读取网关外层结果对象（code/message/result 三层结构）。
+            gateway_result = response_data.get("result")
+
             # 读取数据块字段。
-            data_block = response_data.get("data")
+            data_block = gateway_result.get("data") if isinstance(gateway_result, dict) else response_data.get("data")
 
             # 判断数据块是否为列表形态。
             rows = data_block if isinstance(data_block, list) else []
