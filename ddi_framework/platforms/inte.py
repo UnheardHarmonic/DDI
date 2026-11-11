@@ -238,8 +238,8 @@ class IntePlatform(BasePlatform):
         :rtype: int | None
         """
 
-        # 匹配首个单目算式（操作数与加减乘算符）。
-        match = re.search(r"(\d+)\s*([+\-*xX×~≈])\s*(\d+)", str(text))
+        # 锚定开头匹配首个单目算式（识别文本以算式起始，中段杂讯直接判不解析）。
+        match = re.match(r"\s*(\d+)\s*([+\-*xX×~≈])\s*(\d+)", str(text))
 
         # 判断解析失败。
         if not match:
