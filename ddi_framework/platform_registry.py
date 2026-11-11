@@ -167,6 +167,9 @@ from ddi_framework.platforms.huaxin import HuaxinPlatform
 # 导入西昌东升大药房搜搜电商平台适配器。
 from ddi_framework.platforms.sosoyy import SosoyyPlatform
 
+# 导入国大药房供应商查询平台适配器。
+from ddi_framework.platforms.guodagys import GuodagysPlatform
+
 # 导入 ABACUS 供应链系统平台适配器。
 from ddi_framework.platforms.abacus import AbacusPlatform
 
@@ -258,6 +261,7 @@ PLATFORM_REGISTRY = {
     "taiji": TaijiPlatform,
     "scxh": HuaxinPlatform,
     "sosoyy": SosoyyPlatform,
+    "guodagys": GuodagysPlatform,
     # 注册 ABACUS 供应链系统平台适配器。
     "abacus": AbacusPlatform,
     # 注册贝尔康流向采集服务平台适配器。
