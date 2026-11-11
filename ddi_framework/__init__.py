@@ -124,6 +124,7 @@ _LAZY_PLATFORM_EXPORTS = {
     "MilunPlatform": ("milun", "MilunPlatform"),
     "TianjiPlatform": ("tianji", "TianjiPlatform"),
     "GuodagysPlatform": ("guodagys", "GuodagysPlatform"),
+    "IntePlatform": ("inte", "IntePlatform"),
 }
 
 # 定义公共服务兼容懒加载映射。
