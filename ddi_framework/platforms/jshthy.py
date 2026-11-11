@@ -18,7 +18,7 @@ import os
 import time
 
 # 导入日期时间对象。
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 # 导入 RSA 非对称填充配置。
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -54,6 +54,57 @@ SRM_DATE_PARAM_PREFIX = {
     "纯销流向": "order_date",
     "库存": "",
 }
+
+
+# 定义查询区间按自然月拆分的模块级函数。
+def split_month_ranges(start_date, end_date):
+
+    """
+    将日期区间拆分为不跨自然月的连续子区间列表。
+
+    SRM 网关对带日期的流向查询执行单月校验（跨月返回 -60001），
+    跨月区间必须拆分为逐月子查询后在调用侧合并。
+
+    :param start_date: 查询开始日期。
+    :type start_date: str
+    :param end_date: 查询结束日期。
+    :type end_date: str
+    :return: 单月内子区间列表，元素为（开始日期, 结束日期）。
+    :rtype: list[tuple[str, str]]
+    """
+
+    # 解析开始日期对象。
+    start_value = datetime.strptime(start_date, "%Y-%m-%d").date()
+
+    # 解析结束日期对象。
+    end_value = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+    # 初始化月份游标为开始日期所在自然月首日。
+    cursor = start_value.replace(day=1)
+
+    # 初始化子区间集合。
+    segments = []
+
+    # 逐月推进游标直至覆盖结束日期。
+    while cursor <= end_value:
+
+        # 计算下个自然月首日（当月 28 日后推 4 天再归位到 1 日，兼容大小月与闰年）。
+        next_month = (cursor.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+        # 计算当前子区间起点（不早于查询开始日期）。
+        segment_start = max(cursor, start_value)
+
+        # 计算当前子区间终点（不晚于查询结束日期）。
+        segment_end = min(next_month - timedelta(days=1), end_value)
+
+        # 追加当前自然月子区间。
+        segments.append((segment_start.strftime("%Y-%m-%d"), segment_end.strftime("%Y-%m-%d")))
+
+        # 游标推进到下个自然月首日。
+        cursor = next_month
+
+    # 返回子区间集合。
+    return segments
 
 
 class JshthyPlatform(BasePlatform):
@@ -525,11 +576,17 @@ class JshthyPlatform(BasePlatform):
         start_date = start_date or datetime.now().strftime("%Y-%m-%d")
         end_date = end_date or datetime.now().strftime("%Y-%m-%d")
 
+        # 校验查询日期范围顺序。
+        self.validate_query_range(start_date, end_date)
+
         # 打印查询阶段标题。
         self.ph.section(f"{data_type}查询", self.ph.join(self.ph.kv("开始日期", start_date, "cyan"), self.ph.kv("结束日期", end_date, "cyan")))
 
         # 读取 SRM 会话凭证（可选：网关当前不校验 Authorization，浏览器同款请求仅带占位头即可出数）。
         session_credential = self.resolve_srm_session()
+
+        # 按自然月拆分查询区间（网关对带日期查询执行单月校验，库存快照无日期走单段）。
+        month_segments = split_month_ranges(start_date, end_date) if SRM_DATE_PARAM_PREFIX.get(data_type) else [(start_date, end_date)]
 
         # 初始化合并数据行集合。
         merged_rows = []
@@ -537,61 +594,83 @@ class JshthyPlatform(BasePlatform):
         # 初始化合并表头集合。
         merged_headers = []
 
-        # 初始化总页数（按分页大小与实际行数动态翻页，服务端返回 page_count 时同步刷新）。
+        # 逐月执行子查询并合并结果。
+        for segment_start, segment_end in month_segments:
 
-        # 初始化当前页码。
-        page_number = 1
+            # 打印跨月拆分子区间日志。
+            if len(month_segments) > 1:
 
-        # 循环读取全部分页。
-        while True:
+                # 输出当前子区间进度。
+                self.ph.info(self.ph.join(self.ph.kv("单月子查询", f"{segment_start}~{segment_end}", "cyan")))
 
-            # 构建当前页业务参数。
-            params = self.build_gateway_params(data_type, start_date, end_date, page_number)
+            # 初始化当前月内页码。
+            page_number = 1
 
-            # 构建当前页查询地址。
-            url = self.build_gateway_url(data_type, params, page_number)
+            # 循环读取当前月全部分页。
+            while True:
 
-            # 构建请求头（对齐浏览器网关调用形态；凭证存在时才携带 Authorization）。
-            headers = {"Accept": "application/json, text/plain, */*", "X-Custom-Header": "foobar", "Referer": self.srm_gateway_url.rsplit("/gateway-manager", 1)[0] + "/"}
+                # 构建当前页业务参数。
+                params = self.build_gateway_params(data_type, segment_start, segment_end, page_number)
 
-            # 凭证存在则追加 Authorization。
-            if session_credential:
+                # 构建当前页查询地址。
+                url = self.build_gateway_url(data_type, params, page_number)
 
-                # 写入凭证。
-                headers["Authorization"] = session_credential
+                # 构建请求头（对齐浏览器网关调用形态；凭证存在时才携带 Authorization）。
+                headers = {"Accept": "application/json, text/plain, */*", "X-Custom-Header": "foobar", "Referer": self.srm_gateway_url.rsplit("/gateway-manager", 1)[0] + "/"}
 
-            # 发送网关查询请求。
-            result = self.http.request("GET", url, headers=headers, timeout=180, allow_http_error=True)
+                # 凭证存在则追加 Authorization。
+                if session_credential:
 
-            # 解析网关响应。
-            response_data = self.http.decode_json(result)
+                    # 写入凭证。
+                    headers["Authorization"] = session_credential
 
-            # 读取网关外层结果对象（code/message/result 三层结构）。
-            gateway_result = response_data.get("result")
+                # 发送网关查询请求。
+                result = self.http.request("GET", url, headers=headers, timeout=180, allow_http_error=True)
 
-            # 读取数据块字段。
-            data_block = gateway_result.get("data") if isinstance(gateway_result, dict) else response_data.get("data")
+                # 解析网关响应。
+                response_data = self.http.decode_json(result)
 
-            # 判断数据块是否为列表形态。
-            rows = data_block if isinstance(data_block, list) else []
+                # 读取网关业务错误码（成功为 0）。
+                gateway_code = response_data.get("code")
 
-            # 合并当前页数据行。
-            merged_rows.extend(row for row in rows if isinstance(row, dict))
+                # 判断网关返回业务错误码（如 -60001 查询日期不能跨月、-13005 日期参数缺失）。
+                if isinstance(gateway_code, int) and gateway_code != 0:
 
-            # 按行序合并动态表头。
-            merged_headers = self.merge_srm_headers(merged_headers, rows)
+                    # 抛出携带网关说明的查询失败异常。
+                    raise RuntimeError(f"{self.company_name} {data_type} 网关查询失败（code={gateway_code}）：{response_data.get('message') or '未知业务错误'}")
 
-            # 打印分页读取日志。
-            self.ph.info(self.ph.join(self.ph.kv("当前页", page_number, "cyan"), self.ph.kv("本页记录", len(rows), "cyan"), self.ph.kv("累计记录", len(merged_rows), "cyan")))
+                # 判断网关返回非标准业务结构（路由缺失或网关故障时 result 与 code 均缺失）。
+                if gateway_code is None and not isinstance(response_data.get("result"), dict):
 
-            # 判断当前页是否不足一页以终止读取。
-            if len(rows) < int(self.account.get("分页大小", 10)):
+                    # 抛出网关路由异常说明。
+                    raise RuntimeError(f"{self.company_name} {data_type} 网关路由异常：{response_data.get('message') or response_data.get('error') or '未知网关错误'}（平台侧方法路由缺失或网关故障，请稍后重试或联系平台）")
 
-                # 结束分页循环。
-                break
+                # 读取网关外层结果对象（code/message/result 三层结构）。
+                gateway_result = response_data.get("result")
 
-            # 页码递增。
-            page_number += 1
+                # 读取数据块字段。
+                data_block = gateway_result.get("data") if isinstance(gateway_result, dict) else response_data.get("data")
+
+                # 判断数据块是否为列表形态。
+                rows = data_block if isinstance(data_block, list) else []
+
+                # 合并当前页数据行。
+                merged_rows.extend(row for row in rows if isinstance(row, dict))
+
+                # 按行序合并动态表头。
+                merged_headers = self.merge_srm_headers(merged_headers, rows)
+
+                # 打印分页读取日志。
+                self.ph.info(self.ph.join(self.ph.kv("当前页", page_number, "cyan"), self.ph.kv("本页记录", len(rows), "cyan"), self.ph.kv("累计记录", len(merged_rows), "cyan")))
+
+                # 判断当前页是否不足一页以终止读取。
+                if len(rows) < int(self.account.get("分页大小", 10)):
+
+                    # 结束当前月分页循环。
+                    break
+
+                # 页码递增。
+                page_number += 1
 
         # 返回查询结果。
         return {"headers": merged_headers, "rows": merged_rows, "start_date": start_date, "end_date": end_date}
