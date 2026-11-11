@@ -173,6 +173,9 @@ from ddi_framework.platforms.guodagys import GuodagysPlatform
 # 导入英特集团流向查询平台适配器。
 from ddi_framework.platforms.inte import IntePlatform
 
+# 导入浙江御博商品流向系统平台适配器。
+from ddi_framework.platforms.yubo import YuboPlatform
+
 # 导入 ABACUS 供应链系统平台适配器。
 from ddi_framework.platforms.abacus import AbacusPlatform
 
@@ -266,6 +269,7 @@ PLATFORM_REGISTRY = {
     "sosoyy": SosoyyPlatform,
     "guodagys": GuodagysPlatform,
     "inte": IntePlatform,
+    "yubo": YuboPlatform,
     # 注册 ABACUS 供应链系统平台适配器。
     "abacus": AbacusPlatform,
     # 注册贝尔康流向采集服务平台适配器。
