@@ -93,8 +93,8 @@ class YuboPlatformTests(unittest.TestCase):
         platform = YuboPlatform(self.ACCOUNT_KEY, {"平台": "yubo", "接口根地址": self.EXPECTED_SITE, "账号": "", "密码": ""}, printer=PrintHandler())
         platform.guid = "11111111-1111-1111-1111-111111111111"
 
-        # 构建信封。
-        envelope = platform.build_envelope("*", "{}")
+        # 构建信封（device-info 页面路径与浏览器一致）。
+        envelope = platform.build_envelope("*/", "{}")
 
         # 断言请求行。
         self.assertTrue(envelope.startswith("STTP/1.0 GET 183.129.147.130:18066/*/"))

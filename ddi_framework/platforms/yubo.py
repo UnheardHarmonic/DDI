@@ -271,8 +271,8 @@ class YuboPlatform(BasePlatform):
         # 读取设备信息 JSON 样张（与浏览器报文一致）。
         device_json = self.build_device_json()
 
-        # 构建并发送 device-info 信封。
-        self.ws.send_binary(self.encrypt_rpc(self.build_envelope("*", device_json).encode("utf-8")))
+        # 构建并发送 device-info 信封（页面路径为 */，与浏览器报文一致）。
+        self.ws.send_binary(self.encrypt_rpc(self.build_envelope("*/", device_json).encode("utf-8")))
 
         # 排空确认帧并取得登录页 UI 树。
         frames, login_stml = self.drain(quiet_s=3.0, max_s=30, want_ui=True)
