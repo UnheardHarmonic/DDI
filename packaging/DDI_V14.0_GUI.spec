@@ -54,6 +54,18 @@ binaries += tmp_ret[1]
 # 追加 DDI 既有运行隐藏导入。
 hiddenimports += tmp_ret[2]
 
+# 收集在线验证码识别运行依赖。
+tmp_ret = collect_all("rapidocr_onnxruntime")
+
+# 追加在线验证码识别数据文件。
+datas += tmp_ret[0]
+
+# 追加在线验证码识别二进制文件。
+binaries += tmp_ret[1]
+
+# 追加在线验证码识别隐藏导入。
+hiddenimports += tmp_ret[2]
+
 # 收集 Excel 与平台适配运行依赖。
 for package_name in ["onnxruntime", "cv2", "numpy", "PIL", "openpyxl", "xlrd", "olefile", "cryptography"]:
 

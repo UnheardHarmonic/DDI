@@ -36,6 +36,9 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all("onnxruntime")
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
+tmp_ret = collect_all("rapidocr_onnxruntime")
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
 # 收集 Excel 与平台适配运行依赖。
 for package_name in ["cv2", "numpy", "PIL", "openpyxl", "xlrd", "olefile", "cryptography"]:
 
