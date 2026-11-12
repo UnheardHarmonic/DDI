@@ -1,7 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-DDI V14.0 图形界面 PyInstaller 构建配置。
+DDI V15.0 图形界面单文件 PyInstaller 构建配置。
 
+本 spec 将 Qt GUI 入口、QML 资源和全部依赖打包为单个可执行文件，不生成伴随运行时目录。
 本 spec 仅用于打包独立 GUI 入口，不会被终端入口导入。
 """
 
@@ -10,7 +11,6 @@ from pathlib import Path
 
 # 导入 PyInstaller 依赖收集函数。
 from PyInstaller.utils.hooks import collect_all
-
 
 # 解析 DDI 项目根目录。
 project_root = Path(SPECPATH).resolve().parent
@@ -27,6 +27,9 @@ binaries = []
 # 初始化隐藏导入集合。
 hiddenimports = ["colorama", "bs4", "win32com.client"]
 
+# 定义不参与打包的大体积无关依赖。
+excludes = ["torch", "torchvision", "tensorboard", "huggingface_hub"]
+
 # 收集 PySide6 Qt Quick 运行资源。
 tmp_ret = collect_all("PySide6")
 
@@ -42,16 +45,16 @@ hiddenimports += tmp_ret[2]
 # 收集 QML 界面资源。
 datas.append((str(project_root / "ui"), "ui"))
 
-# 收集 DDI 既有运行依赖。
+# 收集验证码识别运行依赖。
 tmp_ret = collect_all("ddddocr")
 
-# 追加 DDI 既有运行数据文件。
+# 追加验证码识别数据文件。
 datas += tmp_ret[0]
 
-# 追加 DDI 既有运行二进制文件。
+# 追加验证码识别二进制文件。
 binaries += tmp_ret[1]
 
-# 追加 DDI 既有运行隐藏导入。
+# 追加验证码识别隐藏导入。
 hiddenimports += tmp_ret[2]
 
 # 收集在线验证码识别运行依赖。
@@ -91,7 +94,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=["torch", "torchvision", "tensorboard", "huggingface_hub"],
+    excludes=excludes,
     noarchive=False,
     optimize=0,
 )
@@ -99,13 +102,14 @@ a = Analysis(
 # 构建 Python 模块归档。
 pyz = PYZ(a.pure)
 
-# 构建无控制台 GUI 可执行文件。
+# 构建包含全部依赖的单文件 GUI 可执行文件。
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.datas,
     [],
-    exclude_binaries=True,
-    name="DDI_V14.0_GUI",
+    name="DDI_V15.0_GUI",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -116,15 +120,4 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-)
-
-# 构建 GUI 独立 onedir 目录。
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name="DDI_V14.0_GUI_BUILD",
 )

@@ -390,7 +390,7 @@ CHANGELOG_V14 = """DDI V14.0 更新日志
 
 
 # 定义当前启动阶段展示的版本号。
-STARTUP_CHANGELOG_VERSION = "V14"
+STARTUP_CHANGELOG_VERSION = "V15"
 
 # 初始化版本号到更新日志文本的映射。
 STARTUP_CHANGELOGS = {}
@@ -433,6 +433,24 @@ STARTUP_CHANGELOGS["V12"] = CHANGELOG_V12
 
 # 注册 V13.0 更新日志文本。
 STARTUP_CHANGELOGS["V13"] = CHANGELOG_V13
+
+# 定义 V15.0 启动更新日志文本。
+CHANGELOG_V15 = """DDI V15.0 更新日志
+
+新增功能：
+- 新增集中字段中文标题映射模块，覆盖各平台接口返回的全部英文原始字段，正式原始 Excel 表头未做映射的字段已逐一补齐中文，服务端原有中文标题保持不变。
+- 新增浙江御博商品流向系统适配器（Smobiler STTP 私有协议：WebSocket 三段式握手、AES-256-CBC、UI 事件驱动与数据源拉取）。
+- 新增金华英特平台适配器（算术验证码自动识别、流向与库存查询）。
+- 新增辽宁国大供应商查询平台适配器（HTML 表格解析、库存双工作表）。
+- 配置级新增商业：厦门祝强大药房（sosoyy）、南通济生堂大药房（jshthy）、江苏淮安全亿医药（jshthy）、恒泰人民大药房（jshthy）、辽宁国大医药（guodagys）、浙江御博医药（yubo）、金华英特药业（inte）。
+
+修复 BUG：
+- jshthy 网关跨月查询按自然月自动拆分，网关错误不再被吞为空列表。
+- 存仁堂网关地址笔误修正（xjl-job 改为 xxl-job），镇江存仁堂与苏州健生源同步解锁。
+- 恒泰华洋网关权限问题定位为平台侧配置，保持停用待平台恢复。"""
+
+# 注册 V15.0 更新日志文本。
+STARTUP_CHANGELOGS["V15"] = CHANGELOG_V15
 
 # 注册 V14.0 更新日志文本。
 STARTUP_CHANGELOGS["V14"] = CHANGELOG_V14

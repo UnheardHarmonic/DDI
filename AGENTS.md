@@ -1,4 +1,4 @@
-# DDI V14.0 项目协作说明
+# DDI V15.0 项目协作说明
 
 ## 项目定位
 
@@ -6,7 +6,7 @@
 
 ## 固定工作目录
 
-- 项目根目录：`D:\PycharmProjects\pythonProject\King_Code\DDI\DDI V14.0`
+- 项目根目录：`D:\PycharmProjects\pythonProject\King_Code\DDI\DDI V15.0`
 - 主入口：`run_ddi.py`
 - 平台适配器目录：`ddi_framework\platforms`
 - 平台注册：`ddi_framework\platform_registry.py`
@@ -96,17 +96,17 @@
 
 ### 形态一：onedir 标准版（默认，交付同事使用）
 
-- 构建配置：`packaging\DDI_V14.0.spec` + `packaging\DDI_V14.0_GUI.spec`。
+- 构建配置：`packaging\DDI_V15.0.spec` + `packaging\DDI_V15.0_GUI.spec`。
 - 构建命令：`powershell -NoProfile -ExecutionPolicy Bypass -File .\packaging\build_release.ps1`。
-- 产物：`dist\DDI_V14.0\` 整个目录（终端 exe + GUI exe + `_cli_internal` + `_internal` + `config` + `COLLEAGUE_GUIDE.md`），交付必须给整个目录。
+- 产物：`dist\DDI_V15.0\` 整个目录（终端 exe + GUI exe + `_cli_internal` + `_internal` + `config` + `COLLEAGUE_GUIDE.md`），交付必须给整个目录。
 
 ### 形态二：单文件版（用户自用携带）
 
-- 构建配置：`packaging\DDI_V14.0_onefile.spec` + `packaging\DDI_V14.0_GUI_onefile.spec`。
+- 构建配置：`packaging\DDI_V15.0_onefile.spec` + `packaging\DDI_V15.0_GUI_onefile.spec`。
 - 构建命令（两条分别执行）：
-  - `python -m PyInstaller packaging\DDI_V14.0_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_cli`
-  - `python -m PyInstaller packaging\DDI_V14.0_GUI_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_gui`
-- 产物：`dist\DDI_V14.0_单文件版\` 内只有 `DDI_V14.0.exe` 与 `DDI_V14.0_GUI.exe` 两个文件，**交付物就是两个裸 exe，不带任何配置文件**（构建归拢后与验证后都要复查目录内无 config/runtime/log 等任何副产物）。
+  - `python -m PyInstaller packaging\DDI_V15.0_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_cli`
+  - `python -m PyInstaller packaging\DDI_V15.0_GUI_onefile.spec --noconfirm --clean --distpath dist_onefile --workpath runtime\archive\generated\build\onefile_gui`
+- 产物：`dist\DDI_V15.0_单文件版\` 内只有 `DDI_V15.0.exe` 与 `DDI_V15.0_GUI.exe` 两个文件，**交付物就是两个裸 exe，不带任何配置文件**（构建归拢后与验证后都要复查目录内无 config/runtime/log 等任何副产物）。
 - 单文件版特性：每次启动自解压约 10 秒属正常现象；配置、授权、运行产物从 exe 所在目录读取，`license.json` 放 exe 旁 `config\` 内即可生效。
 - 单文件版固定验证流程（2026-10-26 发布实证，固定执行防错）：
   1. 终端 exe `--help` 实跑（首次运行需等自解压）；
@@ -125,7 +125,7 @@
 - spec 的 `excludes` 必须包含 `torch`、`torchvision`、`tensorboard`、`huggingface_hub`：这些是被依赖分析误收集的大体积无关依赖（约 366MB×2），DDI 代码与验证码识别链路（ddddocr/onnxruntime）完全不使用。
 - 构建前置验证：`run_ddi.py --help`、全部源码 `python -m py_compile`、`python -X utf8 -m unittest discover -s tests -p "test_*.py"` 全绿。
 - 构建后验证：终端 exe `--help` 实跑；GUI exe 拉起进程确认存活即可；运行 exe 会在分发目录触发目录自愈（生成 runtime 树和 `===== 说明 =====.md` 空壳目录），交付前必须删除这些运行副产物，只保留产品文件。
-- 构建后体积与排除项核对：分发目录 1.8G 上下为正常体量；必须实测确认 `torch`/`torchvision`/`tensorboard`/`huggingface_hub` 零命中（约 730M 无关依赖，V14.0 发布时曾发现 onedir 双 spec 的 excludes 为空数组导致漏排，与 onefile spec 漂移，发布前逐 spec 核对）。
+- 构建后体积与排除项核对：分发目录 1.8G 上下为正常体量；必须实测确认 `torch`/`torchvision`/`tensorboard`/`huggingface_hub` 零命中（约 730M 无关依赖，V15.0 发布时曾发现 onedir 双 spec 的 excludes 为空数组导致漏排，与 onefile spec 漂移，发布前逐 spec 核对）。
 - 分发目录红线扫描：不得包含导出 Excel、运行日志、Cookie、`license.json`、`license_tool.py`、私钥与公钥（`.pem`）、抓包材料和个人参考材料；`account_config_local.py` 按全量账密内嵌策略允许存在于构建配置与运行时资源中；`certifi` 的 CA 证书属运行必需，不算违规。
 - 版本升级时必须同步重命名四个 spec 文件并更新其内部 `name` 字段、`build_release.ps1` 路径、本节文件名和 `packaging\README.md`。
 - 构建日志写入 `runtime\work\validation`，验证完成后随其他可再生材料一并清理。

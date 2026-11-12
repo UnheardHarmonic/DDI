@@ -14,6 +14,9 @@ from dataclasses import field
 # 导入 Excel 工作簿工具。
 from openpyxl import Workbook
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 
 # 定义动态字段收集结果。
 @dataclass
@@ -210,7 +213,12 @@ class DynamicFieldCollector:
 
         # 读取接口字段标题。
         title = str(header.get("title", "")).strip()
-        return title or key
+
+        # 读取原兜底标题。
+        fallback_title = title or key
+
+        # 应用集中中文映射兜底（标题未含中文时替换）。
+        return resolve_field_title(key, fallback_title)
 
     # 去除重复字段变化记录。
     def _deduplicate_changes(self, changes):
@@ -432,6 +440,9 @@ def normalize_formal_raw_columns(headers, rows):
 
         # 保留原始标题文本且不追加前缀或序号。
         title = str(raw_title if raw_title is not None else key)
+
+        # 应用集中中文映射兜底（标题未含中文时替换）。
+        title = resolve_field_title(key, title)
 
         # 记录当前原始字段键。
         known_keys.add(key)
