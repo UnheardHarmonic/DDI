@@ -382,6 +382,9 @@ class BasePlatform:
         # 导入列宽工具函数。
         from openpyxl.utils import get_column_letter
 
+        # 导入集中字段中文标题映射。
+        from ddi_framework.field_mapping import resolve_field_title
+
         # 创建 Excel 工作簿。
         workbook = Workbook(write_only=False)
 
@@ -391,8 +394,8 @@ class BasePlatform:
         # 设置工作表名称。
         worksheet.title = sheet_name[:31]
 
-        # 写入表头行。
-        worksheet.append([header_name for header_name, _ in headers])
+        # 写入表头行（集中映射翻译显示标题）。
+        worksheet.append([resolve_field_title(field_name, header_name) for header_name, field_name in headers])
 
         # 遍历查询结果并写入数据行。
         for row in rows:

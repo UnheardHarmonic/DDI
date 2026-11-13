@@ -34,6 +34,8 @@ import time
 # 导入 Excel 统一样式函数。
 # 导入通用填充与三重 DES 加密函数。
 from ddi_framework.reverse_utils import ansix923_pad
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
 from ddi_framework.reverse_utils import triple_des_ecb_encrypt
 
 from ddi_framework import apply_standard_excel_style
@@ -573,7 +575,7 @@ class YnqyPlatform(BasePlatform):
         worksheet.title = data_type[:31]
 
         # 写入表头行。
-        worksheet.append(headers)
+        worksheet.append([resolve_field_title(header_item, header_item) for header_item in headers])
 
         # 遍历当前输出数据行。
         for row_data in rows:

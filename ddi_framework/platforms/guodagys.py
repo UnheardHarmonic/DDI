@@ -15,6 +15,9 @@ from html.parser import HTMLParser
 # 导入平台适配器基类。
 from ddi_framework import BasePlatform
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入 Excel 统一样式函数。
 from ddi_framework import apply_standard_excel_style
 
@@ -812,7 +815,7 @@ class GuodagysPlatform(BasePlatform):
             worksheet = workbook.create_sheet(title=sheet_name)
 
             # 写入表头行。
-            worksheet.append(headers)
+            worksheet.append([resolve_field_title(header_item, header_item) for header_item in headers])
 
             # 遍历当前表记录。
             for row in rows:

@@ -23,6 +23,9 @@ from ddi_framework import ProtocolHttpClient
 # 导入平台基类。
 from ddi_framework import BasePlatform
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入日志打印器。
 from ddi_framework import PrintHandler
 
@@ -678,7 +681,7 @@ class GyjlPlatform(BasePlatform):
         worksheet.title = sheet_name[:31]
 
         # 写入表头行。
-        worksheet.append(headers)
+        worksheet.append([resolve_field_title(header_item, header_item) for header_item in headers])
 
         # 遍历查询结果并写入数据行。
         for row in rows:

@@ -36,6 +36,9 @@ from ddi_framework import ProtocolHttpClient
 # 导入平台基类。
 from ddi_framework import BasePlatform
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入日志打印器。
 from ddi_framework import PrintHandler
 
@@ -1509,7 +1512,7 @@ class JztPlatform(BasePlatform):
         worksheet.title = sheet_name[:31]
 
         # 写入表头行。
-        worksheet.append(list(columns.values()))
+        worksheet.append([resolve_field_title(field_name, display_title) for field_name, display_title in columns.items()])
 
         # 遍历查询结果并写入数据行。
         for row in rows:

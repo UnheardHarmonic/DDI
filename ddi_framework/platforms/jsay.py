@@ -48,6 +48,8 @@ from urllib.parse import urlparse
 # 导入平台适配器基类。
 # 导入通用 AES-ECB 加密函数。
 from ddi_framework.reverse_utils import aes_ecb_pkcs7_base64
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
 
 from ddi_framework.platforms.finereport_common import FineReportPlatformBase
 
@@ -520,7 +522,7 @@ class JsayPlatform(FineReportPlatformBase):
         worksheet.title = sheet_name[:31]
 
         # 写入表头行。
-        worksheet.append(headers)
+        worksheet.append([resolve_field_title(header_item, header_item) for header_item in headers])
 
         # 遍历结果行。
         for row in rows:
