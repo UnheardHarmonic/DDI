@@ -29,6 +29,9 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key
 # 导入平台适配器基类。
 from ddi_framework import BasePlatform
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入协议请求客户端。
 from ddi_framework import ProtocolHttpClient
 
@@ -741,7 +744,7 @@ class JshthyPlatform(BasePlatform):
         worksheet.title = sheet_name[:31]
 
         # 写入表头行。
-        worksheet.append(headers)
+        worksheet.append([resolve_field_title(item, item) for item in headers])
 
         # 遍历查询结果并写入数据行。
         for row in rows:

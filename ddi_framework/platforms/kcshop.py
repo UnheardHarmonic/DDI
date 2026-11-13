@@ -20,6 +20,9 @@ import re
 # 导入验证码识别器。
 from ddi_framework import CaptchaSolver
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入下载文件命名工具。
 from ddi_framework import DownloadWatcher
 
@@ -1000,7 +1003,7 @@ class KcshopPlatform(BasePlatform):
         display_headers = self.build_display_headers(sheet_name, headers)
 
         # 写入表头行。
-        worksheet.append(display_headers)
+        worksheet.append([resolve_field_title(item, item) for item in display_headers])
 
         # 遍历查询结果写入数据行。
         for row in rows:

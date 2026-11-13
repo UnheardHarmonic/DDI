@@ -20,6 +20,9 @@ from urllib.parse import urljoin
 # 导入平台基类。
 from ddi_framework import BasePlatform
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入下载命名工具。
 from ddi_framework import DownloadWatcher
 
@@ -526,7 +529,7 @@ class XjyPlatform(BasePlatform):
         worksheet = workbook.active
 
         # 写入表头。
-        worksheet.append(query_definition["字段列表"])
+        worksheet.append([resolve_field_title(item, item) for item in query_definition["字段列表"]])
 
         # 遍历查询结果行。
         for row_data in rows:

@@ -23,6 +23,9 @@ from openpyxl import Workbook
 # 导入平台基类。
 from ddi_framework import BasePlatform
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入 Excel 统一样式函数。
 from ddi_framework import apply_standard_excel_style
 
@@ -695,7 +698,7 @@ class AbacusPlatform(BasePlatform):
         page_columns = self.resolve_page_columns(data_type)
 
         # 写入页面原始表头。
-        worksheet.append([column["title"] for column in page_columns])
+        worksheet.append([resolve_field_title(column.get("key", column["title"]), column["title"]) for column in page_columns])
 
         # 遍历全部原始记录。
         for row_index, row in enumerate(rows, start=1):

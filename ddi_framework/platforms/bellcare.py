@@ -29,6 +29,9 @@ from openpyxl.utils import get_column_letter
 # 导入平台适配器基类。
 from ddi_framework import BasePlatform
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入 Excel 统一样式函数。
 from ddi_framework import apply_standard_excel_style
 
@@ -523,7 +526,7 @@ class BellcarePlatform(BasePlatform):
         raw_header_titles = [f"原始_{field_name}" for field_name in raw_headers]
 
         # 写入标准字段和全部原始字段表头。
-        worksheet.append(standard_headers + raw_header_titles)
+        worksheet.append(standard_headers + [resolve_field_title(item, item) for item in raw_header_titles])
 
         # 遍历每条原始业务记录。
         for row in rows:

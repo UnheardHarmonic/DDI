@@ -35,6 +35,9 @@ from urllib.parse import urlencode
 # 导入验证码处理器。
 from ddi_framework import CaptchaSolver
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入协议请求客户端。
 from ddi_framework import ProtocolHttpClient
 
@@ -1188,7 +1191,7 @@ class HljaldPlatform(BasePlatform):
         field_names = list(columns.keys())
 
         # 写入中文表头行。
-        worksheet.append([columns[field_name] for field_name in field_names])
+        worksheet.append([resolve_field_title(field_name, columns[field_name]) for field_name in field_names])
 
         # 遍历查询结果并写入数据行。
         for row in rows:

@@ -41,6 +41,9 @@ from urllib.parse import urlencode
 # 导入平台基类。
 from ddi_framework import BasePlatform
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入下载命名工具。
 from ddi_framework import DownloadWatcher
 
@@ -2152,7 +2155,7 @@ class HxlxPlatform(BasePlatform):
             headers = ["查询结果"]
 
         # 写入表头行。
-        worksheet.append(headers)
+        worksheet.append([resolve_field_title(item, item) for item in headers])
 
         # 遍历查询结果。
         for row in rows:

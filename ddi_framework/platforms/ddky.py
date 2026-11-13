@@ -29,6 +29,9 @@ from urllib.parse import urlparse
 # 导入协议请求客户端。
 from ddi_framework import ProtocolHttpClient
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入验证码识别器。
 from ddi_framework import CaptchaSolver
 
@@ -948,7 +951,7 @@ class DdkyPlatform(BasePlatform):
         worksheet.title = sheet_name[:31]
 
         # 写入表头行。
-        worksheet.append([header_name for header_name, _ in headers])
+        worksheet.append([resolve_field_title(field_key, header_name) for header_name, field_key in headers])
 
         # 遍历查询结果并写入数据行。
         for row in rows:

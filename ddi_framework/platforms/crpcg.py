@@ -39,6 +39,9 @@ from cryptography.hazmat.primitives.asymmetric import padding
 # 导入 Excel 统一样式函数。
 from ddi_framework import apply_standard_excel_style
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 # 导入协议请求客户端。
 from ddi_framework import ProtocolHttpClient
 
@@ -712,7 +715,7 @@ class CrpcgPlatform(BasePlatform):
         original_headers = [f"原始_{header_name}" for header_name in raw_headers]
 
         # 写入标准字段和接口字段表头。
-        worksheet.append(standard_headers + original_headers)
+        worksheet.append(standard_headers + [resolve_field_title(item, item) for item in original_headers])
 
         # 遍历接口原始记录。
         for row_data in rows:

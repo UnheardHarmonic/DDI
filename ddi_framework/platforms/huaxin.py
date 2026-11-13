@@ -50,6 +50,9 @@ from openpyxl import Workbook
 # 导入通用 AES-ECB 加密函数。
 from ddi_framework.reverse_utils import aes_ecb_pkcs7_base64
 
+# 导入集中字段中文标题映射。
+from ddi_framework.field_mapping import resolve_field_title
+
 from ddi_framework import BasePlatform
 
 # 导入 Excel 统一样式函数。
@@ -1247,7 +1250,7 @@ class HuaxinPlatform(BasePlatform):
         worksheet.title = data_type
 
         # 写入 Excel 表头。
-        worksheet.append(excel_headers)
+        worksheet.append([resolve_field_title(item, item) for item in excel_headers])
 
         # 遍历全部原始记录。
         for row in rows:
