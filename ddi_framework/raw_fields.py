@@ -474,8 +474,11 @@ def normalize_formal_raw_columns(headers, rows):
             # 记录当前新增原始字段键。
             known_keys.add(key)
 
-            # 追加使用原始键作为标题的动态新增字段。
-            columns.append({"key": key, "title": key})
+            # 应用集中中文映射兜底（数据新增字段同样走映射）。
+            title = resolve_field_title(key, key)
+
+            # 追加使用解析标题的动态新增字段。
+            columns.append({"key": key, "title": title})
 
     # 返回保持真实标题与顺序的原始列定义。
     return columns
