@@ -1152,6 +1152,21 @@ FIELD_TITLE_MAPPING.update({
     "sorderId": "销售订单ID",
 })
 
+# 追加注册表：四川圣杰 ABACUS 供应链系统字段。
+FIELD_TITLE_MAPPING.update({
+    "actdat": "发生日期",
+    "bthno": "批号",
+    "dptdes": "门店名称",
+    "dptid": "门店ID",
+    "gdsdes": "商品描述",
+    "gdsid": "商品ID",
+    "mfcfct": "生产厂家",
+    "prvempdes": "供应商名称",
+    "prvempid": "供应商ID",
+    "spc": "规格",
+    "vlddat": "有效期至",
+})
+
 # 追加注册表：御博商品流向系统特有字段（规格文档第五节口径）。
 FIELD_TITLE_MAPPING.update({
     "billsn": "单据流水号",
