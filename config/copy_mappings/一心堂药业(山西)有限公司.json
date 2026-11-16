@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "company_name": "一心堂药业(山西)有限公司",
+  "enabled": true,
+  "data_types": {
+    "配送流向": {
+      "fields": {
+        "规格": {
+          "operation": "direct",
+          "source": "商品名称"
+        },
+        "流向日期": {
+          "operation": "direct",
+          "source": "过账日期"
+        },
+        "买方-原始简称": {
+          "operation": "direct",
+          "source": "收货方名称"
+        },
+        "销售数量（盒）": {
+          "operation": "direct",
+          "source": "数量",
+          "transforms": [
+            "to_number"
+          ]
+        }
+      },
+      "rules": [],
+      "entry_notes": ""
+    }
+  }
+}

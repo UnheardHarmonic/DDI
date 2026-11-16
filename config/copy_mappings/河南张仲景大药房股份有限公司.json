@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "company_name": "河南张仲景大药房股份有限公司",
+  "enabled": true,
+  "data_types": {
+    "配送流向": {
+      "fields": {
+        "规格": {
+          "operation": "direct",
+          "source": "规格"
+        },
+        "流向日期": {
+          "operation": "direct",
+          "source": "开单日期"
+        },
+        "买方-原始简称": {
+          "operation": "direct",
+          "source": "门店名称"
+        },
+        "销售数量（盒）": {
+          "operation": "direct",
+          "source": "数量",
+          "transforms": [
+            "to_number"
+          ]
+        },
+        "供货单价": {
+          "operation": "direct",
+          "source": "售价",
+          "transforms": [
+            "to_number"
+          ]
+        },
+        "批号": {
+          "operation": "direct",
+          "source": "批号"
+        }
+      },
+      "rules": [],
+      "entry_notes": ""
+    }
+  }
+}
