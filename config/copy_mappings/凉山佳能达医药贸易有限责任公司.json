@@ -1,20 +1,47 @@
 {
   "schema_version": 1,
   "company_name": "凉山佳能达医药贸易有限责任公司",
-  "enabled": false,
+  "enabled": true,
   "data_types": {
     "配送流向": {
       "fields": {
-        "规格": {},
-        "流向日期": {},
-        "买方-原始简称": {},
-        "销售数量（支）": {},
-        "销售数量（盒）": {},
-        "供货单价": {},
-        "批号": {}
+        "流向日期": {
+          "operation": "direct",
+          "source": "出库日期"
+        },
+        "买方-原始简称": {
+          "operation": "direct",
+          "source": "往来单位"
+        },
+        "品种": {
+          "operation": "direct",
+          "source": "商品名称"
+        },
+        "规格": {
+          "operation": "direct",
+          "source": "商品规格"
+        },
+        "销售数量（盒）": {
+          "operation": "direct",
+          "source": "数量",
+          "transforms": [
+            "to_number"
+          ]
+        },
+        "供货单价": {
+          "operation": "direct",
+          "source": "含税价",
+          "transforms": [
+            "to_number"
+          ]
+        },
+        "批号": {
+          "operation": "direct",
+          "source": "批号"
+        }
       },
-      "rules": []
+      "rules": [],
+      "entry_notes": "原始导出为标准字段前置+页面原始字段保留双块结构，同名重复列按首个同名列取值"
     }
   }
 }
-
