@@ -33,6 +33,9 @@ from ddi_framework import PrintHandler
 # 导入 Excel 标准样式函数。
 from ddi_framework.excel_style import apply_standard_excel_style
 
+# 导入字段中文标题解析函数。
+from ddi_framework.field_mapping import resolve_field_title
+
 
 # 定义数据类型到检索报表编号清单的映射常量（与浏览器抓包一致）。
 REPORT_DATA_TYPE_IDS = {
@@ -1023,8 +1026,11 @@ class TianjiPlatform(BasePlatform):
                 # 新建工作表。
                 worksheet = workbook.create_sheet(sheet_name[:31])
 
+            # 解析各列中文标题（英文原始标题按映射表转换，中文标题保持原样）。
+            resolved_titles = [resolve_field_title(header["field"], header["title"]) for header in headers]
+
             # 写入表头行（保留接口原始标题顺序）。
-            worksheet.append([header["title"] for header in headers])
+            worksheet.append(resolved_titles)
 
             # 遍历数据行写入原始单元格文本。
             for row in rows:
@@ -1033,13 +1039,13 @@ class TianjiPlatform(BasePlatform):
                 worksheet.append(row)
 
             # 遍历所有导出列设置列宽。
-            for column_index, header in enumerate(headers, start=1):
+            for column_index, resolved_title in enumerate(resolved_titles, start=1):
 
                 # 读取当前列字母。
                 column_letter = get_column_letter(column_index)
 
                 # 按标题长度设置列宽。
-                worksheet.column_dimensions[column_letter].width = max(12, min(34, len(header["title"]) + 10))
+                worksheet.column_dimensions[column_letter].width = max(12, min(34, len(resolved_title) + 10))
 
             # 冻结表头行。
             worksheet.freeze_panes = "A2"
