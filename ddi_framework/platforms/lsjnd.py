@@ -2,7 +2,7 @@
 """
 凉山佳能达医药贸易有限责任公司流向卡管理系统协议适配器。
 
-本模块通过 ASP.NET 表单会话、图片验证码和 LXK HTML 分页页面读取购进流向、配送流向及库存明细，并将标准字段和全部页面原始字段写入 Excel。
+本模块通过 ASP.NET 表单会话、图片验证码和 LXK HTML 分页页面读取购进流向、配送流向及库存明细，并将标准字段和未覆盖的页面原始字段写入 Excel。
 
 :return: 流向卡管理系统协议适配器。
 :rtype: None
@@ -559,7 +559,7 @@ class LsjndPlatform(BasePlatform):
         # 拼接 Excel 输出文件路径。
         output_path = os.path.join(target_directory, file_name)
 
-        # 写入标准字段和完整原始字段。
+        # 写入标准字段和未覆盖的页面原始字段。
         self.write_excel(result["rows"], result["headers"], data_type, output_path)
 
         # 打印 Excel 落地摘要。
@@ -905,7 +905,7 @@ class LsjndPlatform(BasePlatform):
     def write_excel(self, rows, headers, data_type, output_path):
 
         """
-        写入标准字段前置且完整保留页面原始字段的 Excel。
+        写入标准字段前置且保留未覆盖页面原始字段的 Excel。
 
         :param rows: 原始记录列表。
         :type rows: list[dict]
@@ -934,8 +934,14 @@ class LsjndPlatform(BasePlatform):
         # 构建标准字段标题列表。
         standard_titles = [title for title, _ in standard_fields]
 
-        # 写入标准字段及完整页面原始字段表头。
-        worksheet.append(standard_titles + headers)
+        # 收集标准字段已消费的页面原始字段名。
+        consumed_sources = {source_name for _, source_name in standard_fields}
+
+        # 构建保留原始字段列表，仅收录标准字段未覆盖的页面原始字段。
+        retained_headers = [header for header in headers if header not in consumed_sources]
+
+        # 写入标准字段及保留原始字段表头。
+        worksheet.append(standard_titles + retained_headers)
 
         # 遍历全部页面原始记录。
         for row in rows:
@@ -943,8 +949,8 @@ class LsjndPlatform(BasePlatform):
             # 构建标准字段数据。
             standard_values = [row.get(source_name, "") for _, source_name in standard_fields]
 
-            # 构建完整页面原始字段数据。
-            raw_values = [row.get(header, "") for header in headers]
+            # 构建保留原始字段数据。
+            raw_values = [row.get(header, "") for header in retained_headers]
 
             # 写入当前数据行。
             worksheet.append(standard_values + raw_values)

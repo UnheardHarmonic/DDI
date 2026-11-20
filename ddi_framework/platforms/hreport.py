@@ -1462,17 +1462,23 @@ class HreportPlatform(BasePlatform):
         # 构建标准字段标题列表。
         standard_titles = [title for title, _ in standard_fields]
 
+        # 收集标准字段已消费的原始字段名。
+        consumed_sources = {source_field for _, source_field in standard_fields}
+
+        # 构建保留原始字段列表，仅收录标准字段未覆盖的原始字段。
+        retained_headers = [header for header in headers if header not in consumed_sources]
+
         # 写入表头行。
-        worksheet.append(standard_titles + [resolve_field_title(item, item) for item in headers])
+        worksheet.append(standard_titles + [resolve_field_title(item, item) for item in retained_headers])
 
         # 遍历查询结果并写入数据行。
         for row in rows:
 
             # 按表头顺序组装一行数据。
-            worksheet.append([row.get(source_field, "") if isinstance(row, dict) else "" for _, source_field in standard_fields] + [row.get(header, "") if isinstance(row, dict) else "" for header in headers])
+            worksheet.append([row.get(source_field, "") if isinstance(row, dict) else "" for _, source_field in standard_fields] + [row.get(header, "") if isinstance(row, dict) else "" for header in retained_headers])
 
         # 遍历所有导出列设置列宽。
-        for column_index, header_name in enumerate(standard_titles + headers, start=1):
+        for column_index, header_name in enumerate(standard_titles + retained_headers, start=1):
 
             # 读取当前列字母。
             column_letter = get_column_letter(column_index)
