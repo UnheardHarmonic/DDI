@@ -2335,6 +2335,12 @@ class DdiGuiViewModel(QObject):
             # 更新任务汇总数字。
             self.task_state.update({"total": int(payload.get("总数", self.task_state["total"])), "completed": int(payload.get("完成", self.task_state["completed"])), "success": int(payload.get("成功", self.task_state["success"])), "failure": int(payload.get("失败", self.task_state["failure"])), "stopped": int(payload.get("停止", self.task_state["stopped"])), "runningCount": int(payload.get("运行中", self.task_state["runningCount"])), "pending": int(payload.get("待提交", self.task_state["pending"])), "elapsed": f"{payload.get('耗时秒', 0)}秒"})
 
+            # 判断当前事件为队列进度更新。
+            if event_type == "task_progress":
+
+                # 组装含完成度与耗时的运行中状态文本并原地刷新。
+                self.task_state["status"] = f"任务运行中 · 完成 {payload.get('完成', 0)}/{payload.get('总数', 0)} · 运行中 {payload.get('运行中', 0)} · 耗时 {payload.get('耗时秒', 0)}秒"
+
             # 标记任务模型需要刷新。
             refresh_flags["task"] = True
 
@@ -2421,6 +2427,12 @@ class DdiGuiViewModel(QObject):
         :return: None。
         :rtype: None
         """
+
+        # 判断当前事件为队列进度事件。
+        if str(event.event_type) == "task_progress":
+
+            # 队列进度由页首状态条原地刷新，不写入滚动日志避免刷屏。
+            return
 
         # 构建当前日志展示行。
         row = {"time": event.created_at.strftime("%H:%M:%S"), "type": str(event.event_type), "status": str(event.status), "company": str(event.company_name), "message": str(event.message)}
